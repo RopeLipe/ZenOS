@@ -72,7 +72,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         self.logger = logging.getLogger(__name__)
         self.logger.info("Installer started")
-      def _check_prerequisites(self) -> bool:
+    def _check_prerequisites(self) -> bool:
         """Check if all prerequisites are met."""
         try:
             # Check if running as root
@@ -302,36 +302,36 @@ class InstallerWindow(Gtk.ApplicationWindow):
         thread = threading.Thread(target=install_thread)
         thread.daemon = True
         thread.start()
-      def _show_success_dialog(self):
-        """Show installation success dialog."""
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.INFO,
-            buttons=Gtk.ButtonsType.OK,
-            text="Installation Complete!"
-        )
-        dialog.set_property("secondary-text", 
-            "The system has been installed successfully. "
-            "The computer will restart automatically."
-        )
-        dialog.connect("response", self._on_success_response)
-        dialog.present()
-      def _show_installation_error(self):
-        """Show installation error dialog."""
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.ERROR,
-            buttons=Gtk.ButtonsType.OK,
-            text="Installation Failed"
-        )
-        dialog.set_property("secondary-text",
-            "The installation could not be completed. "
-            "Please check the log file for details and try again."
-        )
-        dialog.connect("response", lambda d, r: d.destroy())
-        dialog.present()
+        def _show_success_dialog(self):
+            """Show installation success dialog."""
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                modal=True,
+                message_type=Gtk.MessageType.INFO,
+                buttons=Gtk.ButtonsType.OK,
+                text="Installation Complete!"
+            )
+            dialog.set_property("secondary-text", 
+                "The system has been installed successfully. "
+                "The computer will restart automatically."
+            )
+            dialog.connect("response", self._on_success_response)
+            dialog.present()
+        def _show_installation_error(self):
+            """Show installation error dialog."""
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                modal=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text="Installation Failed"
+            )
+            dialog.set_property("secondary-text",
+                "The installation could not be completed. "
+                "Please check the log file for details and try again."
+            )
+            dialog.connect("response", lambda d, r: d.destroy())
+            dialog.present()
         
         # Re-enable navigation
         self.back_button.set_sensitive(True)
