@@ -133,7 +133,7 @@ def check_dependencies() -> dict:
     required_tools = [
         'sgdisk', 'parted', 'mkfs.ext4', 'mount', 'umount',
         'debootstrap', 'chroot', 'grub-install', 'update-grub',
-        'genfstab', 'nmcli'
+        'blkid', 'nmcli'  # Use blkid instead of genfstab for UUID detection
     ]
     
     results = {}
@@ -182,6 +182,34 @@ def validate_password(password: str) -> tuple[bool, str]:
         return False, "Password is too long"
     
     return True, ""
+
+
+def get_device_uuid(device_path: str) -> str:
+    """Get UUID of a block device."""
+    try:
+        result = subprocess.run(
+            ["blkid", "-s", "UUID", "-o", "value", device_path],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError):
+        pass
+    return ""
+
+
+def get_device_fstype(device_path: str) -> str:
+    """Get filesystem type of a block device."""
+    try:
+        result = subprocess.run(
+            ["blkid", "-s", "TYPE", "-o", "value", device_path],
+            capture_output=True, text=True, timeout=10
+        )
+        if result.returncode == 0:
+            return result.stdout.strip()
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError):
+        pass
+    return ""
 
 
 def is_running_as_root() -> bool:

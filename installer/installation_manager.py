@@ -11,6 +11,9 @@ import logging
 from typing import Dict, Callable, Optional
 from pathlib import Path
 
+# Import utility functions
+from utils.system_utils import is_running_as_root, get_device_uuid, get_device_fstype
+
 
 class InstallationError(Exception):
     """Custom exception for installation errors."""
@@ -232,17 +235,62 @@ class InstallationManager:
         # Generate GRUB configuration
         self._run_command([
             "chroot", self.mount_point, "update-grub"
-        ])
-    
-    def generate_fstab(self):
-        """Generate filesystem table."""
+        ])    def generate_fstab(self):
+        """Generate filesystem table manually."""
         self._update_progress("Generating filesystem table...", 90)
         
         fstab_path = f"{self.mount_point}/etc/fstab"
-        result = self._run_command(["genfstab", "-U", self.mount_point])
         
-        with open(fstab_path, "w") as f:
-            f.write(result.stdout)
+        # Get UUID and filesystem type of the root partition
+        root_partition = f"{self.disk}2"  # Typically the root partition
+        root_uuid = get_device_uuid(root_partition)
+        root_fstype = get_device_fstype(root_partition) or "ext4"
+        
+        # Generate fstab content
+        fstab_content = f"""# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system>             <mount point>   <type>  <options>       <dump>  <pass>
+"""
+        
+        # Add root partition
+        if root_uuid:
+            fstab_content += f"UUID={root_uuid}     /               {root_fstype}    defaults        0       1\n"
+        else:
+            # Fallback to device name if UUID detection fails
+            fstab_content += f"{root_partition}        /               {root_fstype}    defaults        0       1\n"
+            
+        # Add EFI partition if it exists
+        efi_partition = f"{self.disk}1"  # Typically the EFI partition
+        efi_uuid = get_device_uuid(efi_partition)
+        efi_fstype = get_device_fstype(efi_partition)
+        
+        if efi_uuid and efi_fstype in ["vfat", "fat32"]:
+            fstab_content += f"UUID={efi_uuid}     /boot/efi       vfat    defaults        0       2\n"
+        elif efi_fstype in ["vfat", "fat32"]:
+            fstab_content += f"{efi_partition}        /boot/efi       vfat    defaults        0       2\n"
+            
+        # Add common tmpfs entries for better performance
+        fstab_content += """
+# tmpfs for temporary files
+tmpfs                     /tmp            tmpfs   defaults,noatime,mode=1777  0  0
+"""
+        
+        # Add swap if configured (placeholder for future implementation)
+        # swap_partition = f"{self.disk}3"  # If swap partition exists
+        # swap_uuid = get_device_uuid(swap_partition)
+        # if swap_uuid:
+        #     fstab_content += f"UUID={swap_uuid}     none            swap    sw              0       0\n"
+        
+        try:
+            with open(fstab_path, "w") as f:
+                f.write(fstab_content)
+            self.logger.info(f"Generated fstab: {fstab_path}")
+        except Exception as e:
+            raise InstallationError(f"Failed to generate fstab: {e}")
     
     def cleanup(self):
         """Unmount partitions and cleanup."""

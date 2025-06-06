@@ -41,7 +41,7 @@ A modern, user-friendly Linux system installer built with GTK4 and Python.
 - `chroot` (change root environment)
 - `grub-install` (bootloader)
 - `update-grub` (bootloader configuration)
-- `genfstab` (filesystem table generation)
+- `blkid` (UUID detection for fstab generation)
 - `nmcli` (network management)
 
 ### Python Dependencies
@@ -210,7 +210,14 @@ Error: GTK4 not available
 ```
 - Solution: Install GTK4 bindings: `sudo apt install python3-gi gir1.2-gtk-4.0`
 
-**MessageDialog Errors**:
+**Missing System Tools**:
+```
+FileNotFoundError: [Errno 2] No such file or directory: 'tool_name'
+```
+- Install required system tools:
+  - Ubuntu/Debian: `sudo apt install util-linux parted e2fsprogs debootstrap grub-pc-bin grub-efi-amd64-bin network-manager`
+  - Fedora: `sudo dnf install util-linux parted e2fsprogs debootstrap grub2-tools NetworkManager`
+  - Note: Some tools like `debootstrap` are Debian-specific and may need alternatives on other distributions
 ```
 AttributeError: 'MessageDialog' object has no attribute 'format_secondary_text'
 ```
