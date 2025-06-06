@@ -10,6 +10,14 @@ import os
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, Gio, GLib
 
+# Try to use Adw for better dialogs if available
+try:
+    gi.require_version("Adw", "1")
+    from gi.repository import Adw
+    HAS_ADW = True
+except (ImportError, ValueError):
+    HAS_ADW = False
+
 # Import pages
 from pages.locale_page import LocalePage
 from pages.keyboard_page import KeyboardPage
@@ -64,32 +72,38 @@ class InstallerWindow(Gtk.ApplicationWindow):
         )
         self.logger = logging.getLogger(__name__)
         self.logger.info("Installer started")
-    
-    def _check_prerequisites(self) -> bool:
+      def _check_prerequisites(self) -> bool:
         """Check if all prerequisites are met."""
-        # Check if running as root
-        if not is_running_as_root():
-            self._show_error_dialog(
-                "Root Access Required",
-                "This installer must be run with root privileges.\n"
-                "Please run with 'sudo' or as root user."
-            )
+        try:
+            # Check if running as root
+            if not is_running_as_root():
+                self._show_error_dialog(
+                    "Root Access Required",
+                    "This installer must be run with root privileges.\n"
+                    "Please run with 'sudo' or as root user."
+                )
+                return False
+            
+            # Check dependencies
+            deps = check_dependencies()
+            missing = [tool for tool, available in deps.items() if not available]
+            
+            if missing:
+                self._show_error_dialog(
+                    "Missing Dependencies",
+                    f"The following required tools are missing:\n\n" +
+                    "\n".join(f"• {tool}" for tool in missing) +
+                    "\n\nPlease install these tools before running the installer."
+                )
+                return False
+            
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Prerequisites check failed: {e}")
+            # Don't show error dialog here to avoid recursion
+            print(f"Error checking prerequisites: {e}")
             return False
-        
-        # Check dependencies
-        deps = check_dependencies()
-        missing = [tool for tool, available in deps.items() if not available]
-        
-        if missing:
-            self._show_error_dialog(
-                "Missing Dependencies",
-                f"The following required tools are missing:\n\n" +
-                "\n".join(f"• {tool}" for tool in missing) +
-                "\n\nPlease install these tools before running the installer."
-            )
-            return False
-        
-        return True
     
     def _setup_ui(self):
         """Set up the main UI layout."""
@@ -288,8 +302,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         thread = threading.Thread(target=install_thread)
         thread.daemon = True
         thread.start()
-    
-    def _show_success_dialog(self):
+      def _show_success_dialog(self):
         """Show installation success dialog."""
         dialog = Gtk.MessageDialog(
             transient_for=self,
@@ -298,14 +311,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
             buttons=Gtk.ButtonsType.OK,
             text="Installation Complete!"
         )
-        dialog.format_secondary_text(
+        dialog.set_property("secondary-text", 
             "The system has been installed successfully. "
             "The computer will restart automatically."
         )
         dialog.connect("response", self._on_success_response)
         dialog.present()
-    
-    def _show_installation_error(self):
+      def _show_installation_error(self):
         """Show installation error dialog."""
         dialog = Gtk.MessageDialog(
             transient_for=self,
@@ -314,7 +326,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             buttons=Gtk.ButtonsType.OK,
             text="Installation Failed"
         )
-        dialog.format_secondary_text(
+        dialog.set_property("secondary-text",
             "The installation could not be completed. "
             "Please check the log file for details and try again."
         )
@@ -335,22 +347,60 @@ class InstallerWindow(Gtk.ApplicationWindow):
             subprocess.run(["reboot"], check=False)
         except:
             pass
-        
-        # Close application
-        self.close()
-    
-    def _show_error_dialog(self, title: str, message: str):
+          # Close application
+        self.close()    def _show_error_dialog(self, title: str, message: str):
         """Show a generic error dialog."""
-        dialog = Gtk.MessageDialog(
-            transient_for=self,
-            modal=True,
-            message_type=Gtk.MessageType.ERROR,
-            buttons=Gtk.ButtonsType.OK,
-            text=title
-        )
-        dialog.format_secondary_text(message)
-        dialog.connect("response", lambda d, r: d.destroy())
-        dialog.present()
+        # Try Adw.MessageDialog first (preferred for GTK4)
+        if HAS_ADW:
+            try:
+                dialog = Adw.MessageDialog.new(self, title, message)
+                dialog.add_response("ok", "OK")
+                dialog.set_default_response("ok")
+                dialog.connect("response", lambda d, r: d.destroy())
+                dialog.present()
+                return
+            except Exception as e:
+                print(f"Adw.MessageDialog failed: {e}")
+        
+        # Fallback to Gtk.MessageDialog
+        try:
+            dialog = Gtk.MessageDialog(
+                transient_for=self,
+                modal=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text=title
+            )
+            # Use format_secondary_text for GTK4 compatibility
+            dialog.format_secondary_text(message)
+            dialog.connect("response", lambda d, r: d.destroy())
+            dialog.present()
+        except Exception as e:
+            # Fallback for when GTK dialog fails
+            print(f"ERROR: {title}")
+            print(f"Message: {message}")
+            print(f"Dialog error: {e}")
+            
+            # Create a simple dialog as fallback
+            try:
+                dialog = Gtk.Dialog(title=title, transient_for=self, modal=True)
+                dialog.add_button("OK", Gtk.ResponseType.OK)
+                
+                content_area = dialog.get_content_area()
+                label = Gtk.Label(label=f"{title}\n\n{message}")
+                label.set_wrap(True)
+                label.set_margin_top(20)
+                label.set_margin_bottom(20)
+                label.set_margin_start(20)
+                label.set_margin_end(20)
+                content_area.append(label)
+                
+                dialog.connect("response", lambda d, r: d.destroy())
+                dialog.present()
+            except Exception as e2:
+                print(f"Fallback dialog also failed: {e2}")
+                # Final fallback - just print and continue
+                print("Using console output as final fallback")
 
 
 class InstallerApp(Gtk.Application):
@@ -359,6 +409,10 @@ class InstallerApp(Gtk.Application):
     def __init__(self):
         super().__init__(application_id="org.example.linux.installer")
         self.connect("activate", self.on_activate)
+        
+        # Initialize Adw if available
+        if HAS_ADW:
+            Adw.init()
     
     def on_activate(self, app):
         """Handle application activation."""

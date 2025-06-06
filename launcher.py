@@ -19,6 +19,58 @@ def check_python_version():
         return False
     return True
 
+def check_display_environment():
+    """Check if we have a proper display environment."""
+    display = os.environ.get('DISPLAY')
+    wayland_display = os.environ.get('WAYLAND_DISPLAY')
+    
+    if not display and not wayland_display:
+        print("Warning: No display environment detected.")
+        print("Make sure you're running this in a graphical environment.")
+        print("If using SSH, try: ssh -X user@host")
+        return False
+    
+    return True
+
+def check_dbus():
+    """Check if dbus is available and set up environment."""
+    try:
+        # Check if dbus-launch is available
+        result = subprocess.run(['which', 'dbus-launch'], 
+                              capture_output=True, text=True)
+        if result.returncode != 0:
+            print("Warning: dbus-launch not found. GTK may have issues.")
+            print("Install with: sudo apt install dbus-x11")
+            return False
+        
+        # Check if DBUS_SESSION_BUS_ADDRESS is set
+        if not os.environ.get('DBUS_SESSION_BUS_ADDRESS'):
+            print("Info: Starting dbus session...")
+            try:
+                # Start dbus session if not running
+                result = subprocess.run(['dbus-launch', '--sh-syntax'], 
+                                      capture_output=True, text=True, timeout=10)
+                if result.returncode == 0:
+                    # Parse and set dbus environment variables
+                    for line in result.stdout.strip().split('\n'):
+                        if '=' in line and line.startswith('DBUS_'):
+                            key, value = line.split('=', 1)
+                            # Remove quotes from value
+                            value = value.strip('\'"')
+                            os.environ[key] = value
+                    print("Info: D-Bus session started successfully")
+                else:
+                    print("Warning: Failed to start dbus session")
+            except subprocess.TimeoutExpired:
+                print("Warning: dbus-launch timed out")
+            except Exception as e:
+                print(f"Warning: Error starting dbus: {e}")
+                
+    except Exception:
+        print("Warning: Could not check dbus availability")
+        return False
+    return True
+
 def check_gtk():
     """Check if GTK4 is available."""
     try:
@@ -42,6 +94,14 @@ def main():
     # Check Python version
     if not check_python_version():
         sys.exit(1)
+    
+    # Check display environment
+    if not check_display_environment():
+        print("Continuing anyway...")
+    
+    # Check dbus
+    if not check_dbus():
+        print("Continuing anyway...")
     
     # Check GTK availability
     if not check_gtk():

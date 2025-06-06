@@ -51,15 +51,28 @@ pip install -r requirements.txt
 
 On Ubuntu/Debian:
 ```bash
-sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0
+sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 dbus-x11
 ```
 
 ## Usage
 
 ### Running the Installer
+
+**Recommended method** (with environment checks):
+```bash
+sudo python3 launcher.py
+```
+
+**Direct method**:
 ```bash
 sudo python3 main.py
 ```
+
+The `launcher.py` script provides:
+- Prerequisites checking (Python version, GTK4, D-Bus)
+- Environment setup (display, D-Bus session)
+- Better error reporting and guidance
+- Automatic privilege escalation if needed
 
 **Important**: The installer must be run with root privileges to perform system-level operations.
 
@@ -73,6 +86,7 @@ python3 main.py --dry-run  # (if implemented)
 
 ```
 ├── main.py                 # Main application entry point
+├── launcher.py             # Launcher with prerequisites checking
 ├── requirements.txt        # Python dependencies
 ├── README.md              # This file
 │
@@ -178,3 +192,37 @@ This project is provided as-is for educational and development purposes. Use at 
 ## Disclaimer
 
 **⚠️ WARNING**: This installer will permanently erase all data on the selected disk. Always backup important data before running the installer. Test thoroughly in virtual machines before using on physical hardware.
+
+## Troubleshooting
+
+### Common Issues
+
+**D-Bus Session Warning**: 
+```
+Unable to acquire session bus: Failed to execute child process "dbus-launch"
+```
+- Solution: Install D-Bus X11 support: `sudo apt install dbus-x11`
+- The launcher.py script will attempt to start a D-Bus session automatically
+
+**GTK4 Not Found**:
+```
+Error: GTK4 not available
+```
+- Solution: Install GTK4 bindings: `sudo apt install python3-gi gir1.2-gtk-4.0`
+
+**MessageDialog Errors**:
+```
+AttributeError: 'MessageDialog' object has no attribute 'format_secondary_text'
+```
+- This is handled automatically with fallbacks to simpler dialogs
+- Install libadwaita for better dialog support: `sudo apt install gir1.2-adw-1`
+
+**Root Permission Issues**:
+- The installer requires root access for system operations
+- Use `sudo python3 launcher.py` to run with proper privileges
+- The launcher will attempt to re-run with sudo if needed
+
+**Display Issues**:
+- Ensure you're running in a graphical environment
+- For SSH: use `ssh -X user@host` for X11 forwarding
+- For WSL: install an X server like VcXsrv
