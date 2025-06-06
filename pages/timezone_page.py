@@ -6,9 +6,20 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 from .base_page import BasePage
-from utils.system_utils import get_all_timezones
+from utils.system_utils import get_a    def get_data(self) -> dict:
+        """Get the selected timezone."""
+        selected_index = self.tz_dropdown.get_selected()
+        if selected_index != Gtk.INVALID_LIST_POSITION and hasattr(self, 'timezones') and selected_index < len(self.timezones):
+            selected_timezone = self.timezones[selected_index]
+            return {"timezone": selected_timezone}
+        return {"timezone": ""}ones
 from datetime import datetime
 import subprocess
+try:
+    import zoneinfo
+except ImportError:
+    # Fallback for older Python versions
+    zoneinfo = None
 
 
 class TimezonePage(BasePage):
@@ -47,11 +58,16 @@ class TimezonePage(BasePage):
         time_box.append(time_label)
         
         self.time_display = Gtk.Label()
-        self.time_display.set_halign(Gtk.Align.START)
-        self.time_display.add_css_class("monospace")
+        self.time_display.set_halign(Gtk.Align.START)        self.time_display.add_css_class("monospace")
         time_box.append(self.time_display)
         
         self.content_box.append(time_box)
+        
+        # Initialize time display
+        self._update_time_display()
+        
+        # Set up timer for live time updates
+        GLib.timeout_add_seconds(1, self._update_time_display_timer)
         
         # Auto-detect button
         detect_button = Gtk.Button(label="Auto-detect Time Zone")
@@ -74,14 +90,13 @@ class TimezonePage(BasePage):
         
         # Update time display initially
         self._update_time_display()
-    
-    def _load_timezones(self):
+      def _load_timezones(self):
         """Load available timezones into the dropdown."""
-        timezones = get_all_timezones()
+        self.timezones = get_all_timezones()
         
         # Create string list model
         string_list = Gtk.StringList()
-        for timezone in timezones:
+        for timezone in self.timezones:
             string_list.append(timezone)
         
         self.tz_dropdown.set_model(string_list)
@@ -92,38 +107,56 @@ class TimezonePage(BasePage):
                                   capture_output=True, text=True, timeout=5)
             if result.returncode == 0:
                 current_tz = result.stdout.strip()
-                if current_tz in timezones:
-                    self.tz_dropdown.set_selected(timezones.index(current_tz))
+                if current_tz in self.timezones:
+                    self.tz_dropdown.set_selected(self.timezones.index(current_tz))
                     return
         except:
             pass
         
         # Fallback to UTC
-        if "UTC" in timezones:
-            self.tz_dropdown.set_selected(timezones.index("UTC"))
+        if "UTC" in self.timezones:
+            self.tz_dropdown.set_selected(self.timezones.index("UTC"))
     
     def _on_timezone_changed(self, dropdown, param):
         """Handle timezone selection change."""
-        self._update_time_display()
+        # Add a small delay to ensure the selection is updated
+        GLib.timeout_add(100, self._update_time_display)
+    
+    def _update_time_display_timer(self):
+        """Timer callback for updating time display."""
+        if hasattr(self, 'time_display') and self.time_display:
+            self._update_time_display()
+        return True  # Continue the timer
     
     def _update_time_display(self):
         """Update the current time display for selected timezone."""
+        # Check if time_display exists
+        if not hasattr(self, 'time_display') or not self.time_display:
+            return False
+            
         try:
             selected_tz = self.get_data().get("timezone", "UTC")
             if selected_tz:
-                # Use timedatectl to get time in the selected timezone
-                result = subprocess.run([
-                    "timedatectl", "show", "--property=RTC", "--value"
-                ], capture_output=True, text=True, timeout=5)
+                # Use a more robust time display method
+                import zoneinfo
+                from datetime import datetime
                 
-                # For now, just show current system time
-                # In a real implementation, you'd convert to the selected timezone
-                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                self.time_display.set_text(f"{current_time} ({selected_tz})")
+                try:
+                    tz = zoneinfo.ZoneInfo(selected_tz)
+                    current_time = datetime.now(tz).strftime("%Y-%m-%d %H:%M:%S %Z")
+                    self.time_display.set_text(f"{current_time}")
+                except:
+                    # Fallback to system time if timezone conversion fails
+                    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    self.time_display.set_text(f"{current_time} (System Time)")
             else:
                 self.time_display.set_text("No timezone selected")
         except Exception as e:
-            self.time_display.set_text("Unable to display time")
+            if hasattr(self, 'time_display') and self.time_display:
+                self.time_display.set_text("Unable to display time")
+            print(f"Error updating time display: {e}")
+        
+        return False  # For one-time GLib.timeout_add calls
     
     def _on_auto_detect(self, button):
         """Auto-detect the current timezone."""

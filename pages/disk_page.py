@@ -23,13 +23,12 @@ class DiskPage(BasePage):
         warning_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
         warning_box.add_css_class("warning")
         warning_box.set_margin_bottom(20)
-        
-        warning_icon = Gtk.Image.new_from_icon_name("dialog-warning")
+          warning_icon = Gtk.Image.new_from_icon_name("dialog-warning")
         warning_icon.set_icon_size(Gtk.IconSize.NORMAL)
         warning_box.append(warning_icon)
         
         warning_label = Gtk.Label()
-        warning_label.set_markup("<b>⚠️ WARNING:</b> All data on the selected disk will be permanently erased!")
+        warning_label.set_markup("<b>WARNING:</b> All data on the selected disk will be permanently erased!")
         warning_label.set_wrap(True)
         warning_box.append(warning_label)
         

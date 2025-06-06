@@ -6,7 +6,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 from .base_page import BasePage
-from utils.system_utils import get_all_locales
+from utils.system_utils import get_all_locales, get_locale_display_name
 
 
 class LocalePage(BasePage):
@@ -46,31 +46,30 @@ class LocalePage(BasePage):
         info_label.add_css_class("dim-label")
         info_label.set_margin_top(16)
         self.content_box.append(info_label)
-    
-    def _load_locales(self):
+      def _load_locales(self):
         """Load available locales into the dropdown."""
-        locales = get_all_locales()
+        self.locales = get_all_locales()
         
-        # Create string list model
+        # Create string list model with friendly names
         string_list = Gtk.StringList()
-        for locale in locales:
-            string_list.append(locale)
+        for locale in self.locales:
+            display_name = get_locale_display_name(locale)
+            string_list.append(display_name)
         
         self.lang_dropdown.set_model(string_list)
         
-        # Set default to English if available
+        # Set default to English (US) if available
         default_locales = ["en_US.UTF-8", "en_GB.UTF-8", "C.UTF-8"]
         for default in default_locales:
-            if default in locales:
-                self.lang_dropdown.set_selected(locales.index(default))
+            if default in self.locales:
+                self.lang_dropdown.set_selected(self.locales.index(default))
                 break
     
     def get_data(self) -> dict:
         """Get the selected locale."""
         selected_index = self.lang_dropdown.get_selected()
-        if selected_index != Gtk.INVALID_LIST_POSITION:
-            model = self.lang_dropdown.get_model()
-            selected_locale = model.get_string(selected_index)
+        if selected_index != Gtk.INVALID_LIST_POSITION and selected_index < len(self.locales):
+            selected_locale = self.locales[selected_index]
             return {"locale": selected_locale}
         return {"locale": ""}
     

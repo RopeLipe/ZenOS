@@ -231,11 +231,12 @@ class InstallationManager:
             "--target=x86_64-efi", "--efi-directory=/boot/efi", 
             "--bootloader-id=GRUB", disk_path
         ])
-        
-        # Generate GRUB configuration
+          # Generate GRUB configuration
         self._run_command([
             "chroot", self.mount_point, "update-grub"
-        ])    def generate_fstab(self):
+        ])
+    
+    def generate_fstab(self):
         """Generate filesystem table manually."""
         self._update_progress("Generating filesystem table...", 90)
         

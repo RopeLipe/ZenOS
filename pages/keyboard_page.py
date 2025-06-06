@@ -7,6 +7,7 @@ gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 from .base_page import BasePage
 from utils.system_utils import get_all_keymaps
+import subprocess
 
 
 class KeyboardPage(BasePage):
@@ -24,10 +25,10 @@ class KeyboardPage(BasePage):
         kbd_label = Gtk.Label(label="Keyboard Layout:")
         kbd_label.set_halign(Gtk.Align.START)
         kbd_box.append(kbd_label)
-        
-        # Create dropdown with search
+          # Create dropdown with search
         self.kbd_dropdown = Gtk.DropDown()
         self.kbd_dropdown.set_enable_search(True)
+        self.kbd_dropdown.connect("notify::selected", self._on_keymap_changed)
         
         # Load keymaps
         self._load_keymaps()
@@ -60,28 +61,50 @@ class KeyboardPage(BasePage):
         info_label.add_css_class("dim-label")
         info_label.set_margin_top(16)
         self.content_box.append(info_label)
-    
-    def _load_keymaps(self):
+      def _load_keymaps(self):
         """Load available keyboard layouts into the dropdown."""
-        keymaps = get_all_keymaps()
+        self.keymaps = get_all_keymaps()
+        
+        # Log available keymaps for debugging
+        print(f"Found {len(self.keymaps)} keyboard layouts: {self.keymaps[:10]}{'...' if len(self.keymaps) > 10 else ''}")
         
         # Create string list model
         string_list = Gtk.StringList()
-        for keymap in keymaps:
+        for keymap in self.keymaps:
             string_list.append(keymap)
         
         self.kbd_dropdown.set_model(string_list)
         
         # Set default to 'us' if available
-        if "us" in keymaps:
-            self.kbd_dropdown.set_selected(keymaps.index("us"))
+        if "us" in self.keymaps:
+            self.kbd_dropdown.set_selected(self.keymaps.index("us"))
+    
+    def _on_keymap_changed(self, dropdown, param):
+        """Handle keymap selection change and apply it temporarily."""
+        selected_index = self.kbd_dropdown.get_selected()
+        if selected_index != Gtk.INVALID_LIST_POSITION and selected_index < len(self.keymaps):
+            selected_keymap = self.keymaps[selected_index]
+            self._apply_keymap_temporarily(selected_keymap)
+    
+    def _apply_keymap_temporarily(self, keymap: str):
+        """Apply the selected keymap temporarily for testing."""
+        try:
+            # Apply the keymap to current session for testing
+            subprocess.run(
+                ["setxkbmap", keymap], 
+                check=False, 
+                capture_output=True, 
+                timeout=5
+            )
+            print(f"Applied keymap temporarily: {keymap}")
+        except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+            print(f"Could not apply keymap {keymap}: {e}")
     
     def get_data(self) -> dict:
         """Get the selected keyboard layout."""
         selected_index = self.kbd_dropdown.get_selected()
-        if selected_index != Gtk.INVALID_LIST_POSITION:
-            model = self.kbd_dropdown.get_model()
-            selected_keymap = model.get_string(selected_index)
+        if selected_index != Gtk.INVALID_LIST_POSITION and selected_index < len(self.keymaps):
+            selected_keymap = self.keymaps[selected_index]
             return {"keyboard": selected_keymap}
         return {"keyboard": ""}
     

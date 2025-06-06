@@ -10,8 +10,40 @@ from typing import List, Optional
 
 
 def get_all_locales() -> List[str]:
-    """Get all available system locales."""
-    locales = set()
+    """Get all available system locales with user-friendly names."""
+    locale_mapping = {
+        # Common locales with friendly names
+        "en_US.UTF-8": "English (United States)",
+        "en_GB.UTF-8": "English (United Kingdom)",
+        "en_CA.UTF-8": "English (Canada)",
+        "en_AU.UTF-8": "English (Australia)",
+        "es_ES.UTF-8": "Spanish (Spain)",
+        "es_MX.UTF-8": "Spanish (Mexico)",
+        "fr_FR.UTF-8": "French (France)",
+        "fr_CA.UTF-8": "French (Canada)",
+        "de_DE.UTF-8": "German (Germany)",
+        "it_IT.UTF-8": "Italian (Italy)",
+        "pt_BR.UTF-8": "Portuguese (Brazil)",
+        "pt_PT.UTF-8": "Portuguese (Portugal)",
+        "ru_RU.UTF-8": "Russian (Russia)",
+        "zh_CN.UTF-8": "Chinese (Simplified)",
+        "zh_TW.UTF-8": "Chinese (Traditional)",
+        "ja_JP.UTF-8": "Japanese (Japan)",
+        "ko_KR.UTF-8": "Korean (South Korea)",
+        "ar_SA.UTF-8": "Arabic (Saudi Arabia)",
+        "hi_IN.UTF-8": "Hindi (India)",
+        "nl_NL.UTF-8": "Dutch (Netherlands)",
+        "sv_SE.UTF-8": "Swedish (Sweden)",
+        "da_DK.UTF-8": "Danish (Denmark)",
+        "no_NO.UTF-8": "Norwegian (Norway)",
+        "fi_FI.UTF-8": "Finnish (Finland)",
+        "pl_PL.UTF-8": "Polish (Poland)",
+        "tr_TR.UTF-8": "Turkish (Turkey)",
+        "C.UTF-8": "C/POSIX (Default)",
+        "POSIX": "POSIX (Minimal)"
+    }
+    
+    available_locales = set()
     locale_files = ["/usr/share/i18n/SUPPORTED", "/etc/locale.gen"]
     
     for locale_file in locale_files:
@@ -21,17 +53,54 @@ def get_all_locales() -> List[str]:
                     line = line.strip()
                     if line and not line.startswith("#"):
                         locale = line.split()[0]
-                        locales.add(locale)
+                        if locale in locale_mapping:
+                            available_locales.add(locale)
         except FileNotFoundError:
             continue
         except Exception as e:
             print(f"Error reading locale file {locale_file}: {e}")
     
     # Fallback locales if files not found
-    if not locales:
-        locales = {"en_US.UTF-8", "C.UTF-8", "POSIX"}
+    if not available_locales:
+        available_locales = {"en_US.UTF-8", "C.UTF-8", "POSIX"}
     
-    return sorted(locales)
+    # Return sorted list of available locales that have friendly names
+    return sorted([loc for loc in available_locales if loc in locale_mapping])
+
+
+def get_locale_display_name(locale_code: str) -> str:
+    """Get display name for a locale code."""
+    locale_mapping = {
+        "en_US.UTF-8": "English (United States)",
+        "en_GB.UTF-8": "English (United Kingdom)",
+        "en_CA.UTF-8": "English (Canada)",
+        "en_AU.UTF-8": "English (Australia)",
+        "es_ES.UTF-8": "Spanish (Spain)",
+        "es_MX.UTF-8": "Spanish (Mexico)",
+        "fr_FR.UTF-8": "French (France)",
+        "fr_CA.UTF-8": "French (Canada)",
+        "de_DE.UTF-8": "German (Germany)",
+        "it_IT.UTF-8": "Italian (Italy)",
+        "pt_BR.UTF-8": "Portuguese (Brazil)",
+        "pt_PT.UTF-8": "Portuguese (Portugal)",
+        "ru_RU.UTF-8": "Russian (Russia)",
+        "zh_CN.UTF-8": "Chinese (Simplified)",
+        "zh_TW.UTF-8": "Chinese (Traditional)",
+        "ja_JP.UTF-8": "Japanese (Japan)",
+        "ko_KR.UTF-8": "Korean (South Korea)",
+        "ar_SA.UTF-8": "Arabic (Saudi Arabia)",
+        "hi_IN.UTF-8": "Hindi (India)",
+        "nl_NL.UTF-8": "Dutch (Netherlands)",
+        "sv_SE.UTF-8": "Swedish (Sweden)",
+        "da_DK.UTF-8": "Danish (Denmark)",
+        "no_NO.UTF-8": "Norwegian (Norway)",
+        "fi_FI.UTF-8": "Finnish (Finland)",
+        "pl_PL.UTF-8": "Polish (Poland)",
+        "tr_TR.UTF-8": "Turkish (Turkey)",
+        "C.UTF-8": "C/POSIX (Default)",
+        "POSIX": "POSIX (Minimal)"
+    }
+    return locale_mapping.get(locale_code, locale_code)
 
 
 def get_all_keymaps() -> List[str]:
