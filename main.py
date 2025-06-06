@@ -341,14 +341,16 @@ class InstallerWindow(Gtk.ApplicationWindow):
         """Handle success dialog response."""
         dialog.destroy()
         
-        # Trigger reboot (in a real installer)
-        import subprocess
+        # Trigger reboot (in a real installer)        import subprocess
         try:
             subprocess.run(["reboot"], check=False)
         except:
             pass
-          # Close application
-        self.close()    def _show_error_dialog(self, title: str, message: str):
+        
+        # Close application
+        self.close()
+    
+    def _show_error_dialog(self, title: str, message: str):
         """Show a generic error dialog."""
         # Try Adw.MessageDialog first (preferred for GTK4)
         if HAS_ADW:
