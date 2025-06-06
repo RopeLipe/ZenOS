@@ -1,0 +1,122 @@
+/* CSS styling for the GTK installer */
+.installer-window {
+    background-color: @theme_bg_color;
+}
+
+.warning {
+    background-color: alpha(@warning_color, 0.1);
+    border: 1px solid @warning_color;
+    border-radius: 6px;
+    padding: 12px;
+}
+
+.error {
+    color: @error_color;
+    font-weight: bold;
+}
+
+.success {
+    color: @success_color;
+    font-weight: bold;
+}
+
+.dim-label {
+    opacity: 0.7;
+}
+
+.monospace {
+    font-family: monospace;
+}
+
+/* Page styling */
+.page-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.page-description {
+    opacity: 0.8;
+    margin-bottom: 20px;
+}
+
+/* Form styling */
+.form-grid {
+    margin: 20px 0;
+}
+
+.form-grid label {
+    font-weight: 500;
+}
+
+/* Button styling */
+.navigation-button {
+    min-width: 100px;
+    padding: 8px 16px;
+}
+
+/* Progress styling */
+.progress-container {
+    margin: 20px 0;
+}
+
+.progress-details {
+    font-family: monospace;
+    font-size: 0.9em;
+}
+
+/* Status indicators */
+.status-icon {
+    margin-left: 8px;
+    font-weight: bold;
+}
+
+.status-icon.success {
+    color: @success_color;
+}
+
+.status-icon.error {
+    color: @error_color;
+}
+
+/* Disk selection styling */
+.disk-item {
+    padding: 12px;
+    border-radius: 6px;
+    margin: 4px 0;
+}
+
+.disk-item:hover {
+    background-color: alpha(@theme_selected_bg_color, 0.1);
+}
+
+.disk-item.selected {
+    background-color: alpha(@theme_selected_bg_color, 0.2);
+    border: 2px solid @theme_selected_bg_color;
+}
+
+/* Network list styling */
+.network-item {
+    padding: 8px 12px;
+    border-radius: 4px;
+}
+
+.network-item:hover {
+    background-color: alpha(@theme_selected_bg_color, 0.1);
+}
+
+/* Confirmation page styling */
+.summary-item {
+    padding: 8px 0;
+    border-bottom: 1px solid alpha(@theme_fg_color, 0.1);
+}
+
+.summary-label {
+    font-weight: 500;
+    min-width: 150px;
+}
+
+.summary-value {
+    opacity: 0.9;
+}
+
