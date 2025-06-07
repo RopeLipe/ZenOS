@@ -36,11 +36,12 @@ from installer.installation_manager import InstallationManager, InstallationErro
 class InstallerWindow(Gtk.ApplicationWindow):
     """Main installer window."""
     
-    def __init__(self, app):
-        super().__init__(application=app)
+    def __init__(self, app):        super().__init__(application=app)
         self.set_title("Linux System Installer")
-        self.set_default_size(800, 600)
-        self.set_resizable(True)
+        
+        # Set up window properties
+        self.set_default_size(900, 700)  # Reasonable size that fits on most screens
+        self.set_resizable(False)  # Not resizable
         
         # Set up logging
         self._setup_logging()
@@ -103,17 +104,31 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.logger.error(f"Prerequisites check failed: {e}")
             # Don't show error dialog here to avoid recursion
             print(f"Error checking prerequisites: {e}")
-            return False
-      def _setup_ui(self):
+            return False    def _setup_ui(self):
         """Set up the main UI layout."""
         # Main container
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.set_child(main_box)
         
-        # Header bar
-        header_bar = Gtk.HeaderBar()
-        header_bar.set_title_widget(Gtk.Label(label="Linux System Installer"))
-        self.set_titlebar(header_bar)
+        # Custom titlebar with only close button
+        titlebar = Gtk.HeaderBar()
+        titlebar.set_show_title_buttons(False)  # Hide all default buttons
+        
+        # Title label
+        title_label = Gtk.Label(label="Linux System Installer")
+        title_label.add_css_class("installer-title")
+        titlebar.set_title_widget(title_label)
+        
+        # Close button
+        close_button = Gtk.Button()
+        close_button.set_icon_name("window-close-symbolic")
+        close_button.add_css_class("circular")
+        close_button.add_css_class("destructive-action")
+        close_button.set_tooltip_text("Close Installer")
+        close_button.connect("clicked", self._on_close_clicked)
+        titlebar.pack_end(close_button)
+        
+        self.set_titlebar(titlebar)
         
         # Add CSS classes for styling
         self.add_css_class("installer-window")
@@ -121,7 +136,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Step indicator at the top
         self._setup_step_indicator(main_box)
         
-        # Content area with stack and icons
+        # Content area with stack
         content_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
         content_container.set_hexpand(True)
         content_container.set_vexpand(True)
@@ -136,17 +151,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.stack.set_transition_duration(300)
         self.stack.set_hexpand(True)
         self.stack.set_vexpand(True)
-        content_container.append(self.stack)
-        
-        # Right side icon area
-        self.page_icon = Gtk.Image()
-        self.page_icon.set_icon_size(Gtk.IconSize.LARGE)
-        self.page_icon.set_pixel_size(128)
-        self.page_icon.set_valign(Gtk.Align.CENTER)
-        self.page_icon.set_halign(Gtk.Align.CENTER)
-        self.page_icon.set_margin_start(40)
-        self.page_icon.add_css_class("page-icon")
-        content_container.append(self.page_icon)
+        content_container.append(self.stack)        
         
         main_box.append(content_container)
         
@@ -257,12 +262,8 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self.next_button.set_icon_name("go-next-symbolic")
         else:
             self.next_button.set_icon_name("system-run-symbolic")
-        
-        # Update step indicators
+          # Update step indicators
         self._update_step_indicators()
-        
-        # Update page icon
-        self._update_page_icon()
     
     def _update_step_indicators(self):
         """Update the step indicator circles and labels."""
@@ -288,22 +289,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 circle.add_css_class("step-inactive")
                 label.add_css_class("step-inactive")
                 circle.set_text(str(i + 1))
-    
-    def _update_page_icon(self):
-        """Update the large page icon on the right side."""
-        page_icons = [
-            "preferences-desktop-locale-symbolic",  # Language
-            "input-keyboard-symbolic",              # Keyboard
-            "preferences-system-time-symbolic",     # Timezone
-            "drive-harddisk-symbolic",             # Storage
-            "network-wireless-symbolic",           # Network
-            "system-users-symbolic"                # User
-        ]
-        
-        if 0 <= self.current_page_index < len(page_icons):
-            self.page_icon.set_from_icon_name(page_icons[self.current_page_index])
-    
-    def _show_current_page(self):
+      def _show_current_page(self):
         """Show the current page and call its enter handler."""
         if 0 <= self.current_page_index < len(self.pages):
             page = self.pages[self.current_page_index]
@@ -345,13 +331,9 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Update navigation for confirmation
         self.back_button.set_sensitive(True)
         self.next_button.set_icon_name("system-run-symbolic")
-        
-        # Hide step indicators during confirmation
+          # Hide step indicators during confirmation
         for circle, label in zip(self.step_circles, self.step_labels):
             circle.get_parent().set_visible(False)
-        
-        # Show confirmation icon
-        self.page_icon.set_from_icon_name("dialog-question-symbolic")
         
         # Connect to final install
         try:
@@ -367,14 +349,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         if not is_valid:
             error_msg = "Please fix the following issues:\n\n" + "\n".join(f"• {error}" for error in errors)
             self._show_error_dialog("Validation Error", error_msg)
-            return
-          # Show loading page
+            return        # Show loading page
         self.stack.set_visible_child_name("loading")
         self.back_button.set_sensitive(False)
         self.next_button.set_sensitive(False)
-        
-        # Show installation icon
-        self.page_icon.set_from_icon_name("system-software-install-symbolic")
         
         # Start installation
         self._start_installation()

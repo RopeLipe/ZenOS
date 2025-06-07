@@ -21,14 +21,11 @@ class LocalePage(BasePage):
         # Language selection
         lang_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         
-        lang_label = Gtk.Label(label="Language:")
-        lang_label.set_halign(Gtk.Align.START)
+        lang_label = Gtk.Label(label="Language:")        lang_label.set_halign(Gtk.Align.START)
         lang_box.append(lang_label)
           # Create dropdown with search
         self.lang_dropdown = Gtk.DropDown()
         self.lang_dropdown.set_enable_search(True)
-        # Set search match mode for case-insensitive search
-        self.lang_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         
         # Load locales
         self._load_locales()

@@ -202,13 +202,24 @@ class WiFiPage(BasePage):
             self.signal_icon.set_from_icon_name("network-wireless-signal-ok-symbolic")
         else:
             self.signal_icon.set_from_icon_name("network-wireless-signal-weak-symbolic")
-    
-    def _get_signal_strength(self, ssid):
+      def _get_signal_strength(self, ssid):
         """Get signal strength for network (mock implementation)."""
         # In real implementation, parse nmcli output for signal strength
         import random
         return random.randint(20, 100)
-      def _load_networks(self):
+    
+    def _signal_bars(self, strength):
+        """Convert signal strength to bar representation."""
+        if strength >= 75:
+            return "▂▄▆█"
+        elif strength >= 50:
+            return "▂▄▆"
+        elif strength >= 25:
+            return "▂▄"
+        else:
+            return "▂"
+    
+    def _load_networks(self):
         """Load available WiFi networks."""
         networks = get_wifi_networks()
         
@@ -221,21 +232,10 @@ class WiFiPage(BasePage):
                 strength = self._get_signal_strength(network)
                 display_name = f"{network} ({self._signal_bars(strength)})"
                 self.network_combo.append_text(display_name)
-                self.network_combo.append_text(network)  # Store original name too
         else:
             self.network_combo.append_text("No networks found")
     
-    def _signal_bars(self, strength):
-        """Convert signal strength to bar representation."""
-        if strength >= 75:
-            return "▂▄▆█"
-        elif strength >= 50:
-            return "▂▄▆"
-        elif strength >= 25:
-            return "▂▄"
-        else:
-            return "▂"
-      def _on_scan_networks(self, button):
+    def _on_scan_networks(self, button):
         """Scan for WiFi networks."""
         button.set_sensitive(False)
         
@@ -284,7 +284,8 @@ class WiFiPage(BasePage):
         else:
             button.set_icon_name("view-conceal-symbolic")
             button.set_tooltip_text("Show password")
-      def _update_test_button(self):
+    
+    def _update_test_button(self):
         """Update test button sensitivity."""
         text = self.network_combo.get_active_text()
         has_selection = text and text != "No networks found"

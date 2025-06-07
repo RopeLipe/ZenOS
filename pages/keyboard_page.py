@@ -21,13 +21,11 @@ class KeyboardPage(BasePage):
         
         # Keyboard layout selection
         kbd_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        
-        kbd_label = Gtk.Label(label="Keyboard Layout:")
+          kbd_label = Gtk.Label(label="Keyboard Layout:")
         kbd_label.set_halign(Gtk.Align.START)
         kbd_box.append(kbd_label)        # Create dropdown with search
         self.kbd_dropdown = Gtk.DropDown()
         self.kbd_dropdown.set_enable_search(True)
-        self.kbd_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self.kbd_dropdown.connect("notify::selected", self._on_keymap_changed)
         
         # Load keymaps

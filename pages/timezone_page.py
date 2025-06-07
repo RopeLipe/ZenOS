@@ -31,14 +31,12 @@ class TimezonePage(BasePage):
         tz_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
         tz_box.set_hexpand(True)
         
-        tz_label = Gtk.Label(label="Time Zone:")
-        tz_label.set_halign(Gtk.Align.START)
+        tz_label = Gtk.Label(label="Time Zone:")        tz_label.set_halign(Gtk.Align.START)
         tz_box.append(tz_label)
         
         # Create dropdown with search
         self.tz_dropdown = Gtk.DropDown()
         self.tz_dropdown.set_enable_search(True)
-        self.tz_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self.tz_dropdown.connect("notify::selected", self._on_timezone_changed)
         
         # Load timezones

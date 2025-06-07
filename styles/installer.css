@@ -1,6 +1,41 @@
 /* CSS styling for the GTK installer */
 .installer-window {
     background-color: @theme_bg_color;
+    border-radius: 12px;
+}
+
+/* Custom titlebar styling */
+.installer-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: @theme_fg_color;
+}
+
+/* Custom titlebar */
+headerbar {
+    background: linear-gradient(to bottom, @theme_bg_color, shade(@theme_bg_color, 0.9));
+    border-bottom: 1px solid @borders;
+    border-radius: 12px 12px 0 0;
+    min-height: 46px;
+}
+
+/* Destructive close button */
+button.destructive-action.circular {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    min-width: 32px;
+    min-height: 32px;
+}
+
+button.destructive-action.circular:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+button.destructive-action.circular:active {
+    background: #a93226;
+    transform: scale(0.95);
 }
 
 /* Step Indicator Styling */
@@ -77,11 +112,6 @@
     background-color: @accent_color;
     color: @accent_fg_color;
     border-color: @accent_color;
-}
-
-/* Page Icon Styling */
-.page-icon {
-    opacity: 0.6;
 }
 
 /* Card-style components */
