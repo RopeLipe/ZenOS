@@ -258,7 +258,7 @@ class UserPage(BasePage):
         
     def show_errors(self, errors):
         """Show validation errors"""
-        error_text = "\\n".join(errors)
+        error_text = "\n".join(errors)
         dialog = Gtk.MessageDialog(
             transient_for=self.get_root(),
             modal=True,
