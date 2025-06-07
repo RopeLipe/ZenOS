@@ -48,6 +48,8 @@ class WelcomePage(BasePage):
         install_button = Gtk.Button(label="Install Now")
         install_button.add_css_class("btn-primary")
         install_button.add_css_class("welcome-install-button")
+        install_button.set_hexpand(False) # Prevent button from expanding horizontally
+        install_button.set_halign(Gtk.Align.CENTER) # Center the button if it doesn't expand
         install_button.connect("clicked", self.on_install_now)
         centered_box.append(install_button)
         

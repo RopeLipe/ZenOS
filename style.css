@@ -428,9 +428,10 @@ image.welcome-laptop-icon {
 .welcome-install-button {
     padding: 10px 18px; /* Adjusted padding */
     font-size: 15px;    /* Adjusted font size */
-    min-width: 190;     /* Allow button to size based on content + padding */
-    width: 190;         /* Explicitly allow auto width */
+    /* min-width: 190px; */     /* Remove min-width to allow natural sizing */
+    /* width: 190px; */         /* Remove fixed width */
     /* Centering the button if its parent is a Gtk.Box with halign=CENTER */
+    /* Add hexpand=False to the button in Python if it's taking full width of a centered box */
 }
 
 /* Ensure the centered box itself is centered and takes up appropriate space */
@@ -469,6 +470,14 @@ image.welcome-laptop-icon {
     padding: 15px 30px; /* Larger padding */
     font-size: 18px; /* Larger font */
     font-weight: 600;
+}
+
+/* Copyright Label Styling */
+.copyright-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #888888; /* Light grey color for copyright text */
+    background-color: transparent; /* Ensure no background color from other styles */
 }
 
 /* Language Page Specific Styling */

@@ -87,10 +87,26 @@ class InstallerWindow(Adw.ApplicationWindow):
     
     def setup_layout(self):
         """Setup main layout"""
-        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        main_box.add_css_class("main-window")
-        main_box.append(self.stack)
-        self.set_content(main_box)
+        # Main vertical box that holds the stack and the copyright
+        outer_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        outer_box.add_css_class("main-window") # Apply main-window styles here
+
+        # Page stack
+        outer_box.append(self.stack) # Add stack first
+
+        # Copyright label
+        copyright_label = Gtk.Label(label="Copyright © Wave Company. 2025")
+        copyright_label.add_css_class("copyright-label")
+        copyright_label.set_halign(Gtk.Align.START) # Align text to the start (left)
+        copyright_label.set_hexpand(False) # Don't expand horizontally
+        copyright_label.set_valign(Gtk.Align.END) # Align to the bottom of its allocated space
+        copyright_label.set_vexpand(False) # Don't expand vertically, keep it at the bottom
+        copyright_label.set_margin_start(15) # Margin from the left edge
+        copyright_label.set_margin_bottom(10) # Margin from the bottom edge
+        
+        outer_box.append(copyright_label) # Add copyright label at the bottom
+
+        self.set_content(outer_box) # Set outer_box as the window content
     
     def navigate_to(self, page_name):
         """Navigate to specified page"""
