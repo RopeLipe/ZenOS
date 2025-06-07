@@ -36,9 +36,12 @@ class WelcomePage(BasePage):
         centered_box.append(subtitle)
 
         # Laptop Icon
-        icon_path = os.path.join("home/developer/ZenOS/assets", "laptop-wave-icon.png")
-        laptop_icon = Gtk.Image.new_from_file(icon_path)
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        icon_path = os.path.join(base_dir, "assets", "laptop-wave-icon.png")
+        laptop_icon = Gtk.Image()
+        laptop_icon.set_from_file(icon_path)
         laptop_icon.add_css_class("welcome-laptop-icon")
+        laptop_icon.set_size_request(128, 128)
         # Remove set_pixel_size, rely on CSS for sizing
         centered_box.append(laptop_icon)
 

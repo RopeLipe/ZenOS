@@ -35,7 +35,7 @@ class LanguagePage(BasePage):
         # Language icon using image file       
         # Get absolute path to icon file (multiple ways to ensure we find it)
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        icon_path = os.path.join(base_dir, "assets", "language-icon.png") # Corrected path
+        icon_path = os.path.join(base_dir, "assets", "Language-Icon.png") # Corrected path
             
             
         # Print debug info
