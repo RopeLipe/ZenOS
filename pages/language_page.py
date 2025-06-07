@@ -1,6 +1,18 @@
 """
-Language Selection Page
-"""
+Language Selec        # Left panel with title and icon
+        left_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        left_panel.add_css_class("language-left-panel")
+        
+        # Language title (above icon now)
+        title_label = Gtk.Label(label="Language")
+        title_label.add_css_class("language-title")
+        title_label.set_halign(Gtk.Align.START)
+        left_panel.append(title_label)
+        
+        # Language icon - Using proper language/globe icon
+        icon_label = Gtk.Label(label="🌐")
+        icon_label.add_css_class("language-icon")
+        left_panel.append(icon_label)"
 
 import gi
 gi.require_version('Gtk', '4.0')
@@ -38,17 +50,16 @@ class LanguagePage(BasePage):
         # Header section
         header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         header_box.add_css_class("language-header")
-        
-        # Subtitle
+          # Subtitle
         subtitle_label = Gtk.Label(label="Select Language")
         subtitle_label.add_css_class("page-subtitle")
-        subtitle_label.set_halign(Gtk.Align.START)
+        subtitle_label.set_halign(Gtk.Align.END)
         header_box.append(subtitle_label)
         
         # Description
         desc_label = Gtk.Label(label="Choose your preferred language for the installation and system.")
         desc_label.add_css_class("page-description")
-        desc_label.set_halign(Gtk.Align.START)
+        desc_label.set_halign(Gtk.Align.END)
         desc_label.set_wrap(True)
         header_box.append(desc_label)
         
@@ -79,21 +90,20 @@ class LanguagePage(BasePage):
         # Create list box
         self.language_list = Gtk.ListBox()
         self.language_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
-        
-        # Language options with flags/icons
+          # Language options without flag emojis
         languages = [
-            ("🇺🇸  English", "en"),
-            ("🇪🇸  Español", "es"),
-            ("🇫🇷  Français", "fr"),
-            ("🇩🇪  Deutsch", "de"),
-            ("🇮🇹  Italiano", "it"),
-            ("🇵🇹  Português", "pt"),
-            ("🇷🇺  Русский", "ru"),
-            ("🇨🇳  中文", "zh"),
-            ("🇯🇵  日本語", "ja"),
-            ("🇰🇷  한국어", "ko"),
-            ("🇸🇦  العربية", "ar"),
-            ("🇮🇳  हिन्दी", "hi")
+            ("English", "en"),
+            ("Español", "es"),
+            ("Français", "fr"),
+            ("Deutsch", "de"),
+            ("Italiano", "it"),
+            ("Português", "pt"),
+            ("Русский", "ru"),
+            ("中文", "zh"),
+            ("日本語", "ja"),
+            ("한국어", "ko"),
+            ("العربية", "ar"),
+            ("हिन्दी", "hi")
         ]
         
         for lang_name, lang_code in languages:

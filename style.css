@@ -106,14 +106,14 @@ entry text {
 .btn-primary {
     background: #4490EC;
     border: 1px solid #5197EC;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #FFFFFF;
-    padding: 4px 12px;
+    padding: 12px 24px;
     font-family: 'Inter', sans-serif;
-    font-weight: 400;
-    font-size: 12px;
-    min-width: 60px;
-    min-height: 24px;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 120px;
+    min-height: 40px;
 }
 
 .btn-primary:hover {
@@ -130,14 +130,14 @@ entry text {
 .btn-secondary {
     background: #1E1E1E;
     border: 1px solid #2A2A2A;
-    border-radius: 6px;
+    border-radius: 8px;
     color: #FFFFFF;
-    padding: 4px 12px;
+    padding: 12px 24px;
     font-family: 'Inter', sans-serif;
     font-weight: 400;
-    font-size: 12px;
-    min-width: 60px;
-    min-height: 24px;
+    font-size: 14px;
+    min-width: 120px;
+    min-height: 40px;
 }
 
 .btn-secondary:hover {
@@ -315,13 +315,13 @@ scrolledwindow {
 .language-left-panel {
     background: transparent;
     padding: 20px;
-    min-width: 200px;
+    min-width: 300px;
 }
 
 .language-icon {
-    font-size: 64px;
-    margin-bottom: 24px;
-    color: #ffffff;
+    font-size: 48px;
+    margin-top: 20px;
+    color: #4490EC;
 }
 
 .language-title {
@@ -333,18 +333,24 @@ scrolledwindow {
 }
 
 .language-right-panel {
-    padding: 20px 40px;
+    padding: 20px 40px 120px 40px;
+    margin-left: auto;
+    min-width: 400px;
+    max-width: 500px;
 }
 
 .language-header {
     margin-bottom: 24px;
+    text-align: right;
 }
 
 .language-selection-container {
     background: #1A1A1A;
     border: 1px solid #2A2A2A;
     border-radius: 12px;
-    min-height: 400px;
+    min-height: 300px;
+    max-height: 350px;
+    width: 100%;
 }
 
 .language-list-item {
@@ -368,4 +374,13 @@ scrolledwindow {
 
 .language-list-item:last-child {
     border-bottom: none;
+}
+
+/* Language page text alignment */
+.language-right-panel .page-subtitle {
+    text-align: right;
+}
+
+.language-right-panel .page-description {
+    text-align: right;
 }
