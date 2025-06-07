@@ -388,3 +388,60 @@ scrolledwindow {
 .language-right-panel .page-description {
     text-align: right;
 }
+
+/* Welcome Page Styling */
+.welcome-page-container {
+    padding: 40px;
+    box-sizing: border-box;
+    height: 100%;
+    display: flex; /* Use flex to help with centering and spacing */
+    flex-direction: column;
+}
+
+.welcome-page-title-top-left {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.5); /* Light grey */
+    margin-bottom: 20px; /* Space below this title */
+}
+
+.welcome-main-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 32px;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.welcome-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.welcome-laptop-icon image {
+    /* Style for the Gtk.Image widget if needed, like size or aspect ratio */
+    /* For Gtk.Picture, you might need to target 'picture' or a class you add to it */
+    min-width: 200px;  /* Example minimum size */
+    min-height: 150px; /* Example minimum size */
+    background-size: contain; /* Or cover, depending on desired effect */
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.welcome-install-button {
+    padding: 12px 30px; /* Make button a bit larger */
+    font-size: 16px;
+    min-width: 150px;
+    /* Centering the button if its parent is a Gtk.Box with halign=CENTER */
+}
+
+/* Ensure the centered box itself is centered and takes up appropriate space */
+.welcome-page-container > box:nth-child(2) { /* This targets the centered_box */
+    justify-content: center; /* Vertical centering of its content */
+}

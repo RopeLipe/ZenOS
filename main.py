@@ -25,13 +25,14 @@ from pages.keyboard_page import KeyboardPage
 from pages.disk_page import DiskPage
 from pages.wifi_page import WifiPage
 from pages.user_page import UserPage
+from pages.welcome_page import WelcomePage # Import WelcomePage
 
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-          # Window properties
+        # Window properties
         self.set_title("System Installer")
-        self.set_default_size(1000, 700)
+        self.set_default_size(1024, 720) # Increased window size
         self.set_resizable(False)
         
         # Remove titlebar for clean rounded look
@@ -52,7 +53,7 @@ class InstallerWindow(Adw.ApplicationWindow):
         self.setup_layout()
         
         # Show first page
-        self.stack.set_visible_child_name("language")
+        self.stack.set_visible_child_name("welcome") # Start with welcome page
     
     def load_css(self):
         """Load custom CSS styling"""
@@ -72,6 +73,7 @@ class InstallerWindow(Adw.ApplicationWindow):
     def init_pages(self):
         """Initialize all installer pages"""
         self.pages = {
+            "welcome": WelcomePage(self.navigate_to), # Add welcome page
             "language": LanguagePage(self.navigate_to),
             "timezone": TimezonePage(self.navigate_to),
             "keyboard": KeyboardPage(self.navigate_to),
