@@ -17,12 +17,16 @@ class BasePage(Gtk.Box):
         self.content_box.set_vexpand(True)
         self.append(self.content_box)
         
-        # Navigation buttons area
+        # Create overlay for absolute positioning
+        self.overlay = Gtk.Overlay()
+        self.append(self.overlay)
+        
+        # Navigation buttons area - positioned absolutely
         self.nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.nav_box.set_homogeneous(True)
-        self.nav_box.set_spacing(20)
+        self.nav_box.set_spacing(12)
+        self.nav_box.set_halign(Gtk.Align.END)
+        self.nav_box.set_valign(Gtk.Align.END)
         self.nav_box.add_css_class("nav-buttons")
-        self.append(self.nav_box)
         
         # Back button
         self.back_btn = Gtk.Button(label="Back")
@@ -33,6 +37,8 @@ class BasePage(Gtk.Box):
         self.continue_btn = Gtk.Button(label="Continue")
         self.continue_btn.add_css_class("btn-primary")
         self.nav_box.append(self.continue_btn)
+        
+        self.overlay.add_overlay(self.nav_box)
     
     def create_header(self, title, subtitle, description):
         """Create page header with title, subtitle and description"""

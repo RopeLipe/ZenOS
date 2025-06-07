@@ -25,8 +25,12 @@ class InstallerWindow(Adw.ApplicationWindow):
         
         # Window properties
         self.set_title("System Installer")
-        self.set_default_size(950, 700)
+        self.set_default_size(1000, 700)
         self.set_resizable(False)
+        
+        # Remove titlebar for clean look
+        self.set_titlebar(None)
+        self.set_decorated(False)
         
         # Load custom CSS
         self.load_css()
@@ -38,9 +42,6 @@ class InstallerWindow(Adw.ApplicationWindow):
         
         # Initialize pages
         self.init_pages()
-        
-        # Set up header bar
-        self.setup_header()
         
         # Create main layout
         self.setup_layout()
@@ -71,27 +72,18 @@ class InstallerWindow(Adw.ApplicationWindow):
             "keyboard": KeyboardPage(self.navigate_to),
             "disk": DiskPage(self.navigate_to),
             "wifi": WifiPage(self.navigate_to),
-            "user": UserPage(self.navigate_to)
-        }
+            "user": UserPage(self.navigate_to)        }
         
         # Add pages to stack
         for name, page in self.pages.items():
             self.stack.add_named(page, name)
-      def setup_header(self):
-        """Setup header bar"""
-        self.header = Adw.HeaderBar()
-        self.header.set_title_widget(Gtk.Label(label="System Installer"))
-        self.header.add_css_class("installer-header")
-        
-        # Create main content with header
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.main_box.append(self.header)
-        self.main_box.append(self.stack)
-        self.set_content(self.main_box)
-      def setup_layout(self):
+    
+    def setup_layout(self):
         """Setup main layout"""
-        # Layout is now handled in setup_header
-        pass
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        main_box.add_css_class("main-window")
+        main_box.append(self.stack)
+        self.set_content(main_box)
     
     def navigate_to(self, page_name):
         """Navigate to specified page"""
