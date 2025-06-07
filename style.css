@@ -472,14 +472,6 @@ image.welcome-laptop-icon {
     font-weight: 600;
 }
 
-/* Copyright Label Styling */
-.copyright-label {
-    font-family: 'Inter', sans-serif;
-    font-size: 12px;
-    color: #888888; /* Light grey color for copyright text */
-    background-color: transparent; /* Ensure no background color from other styles */
-}
-
 /* Language Page Specific Styling */
 .language-main-container {
     padding: 20px; /* Consistent padding */
