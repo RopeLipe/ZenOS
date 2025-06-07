@@ -112,8 +112,8 @@ entry text {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
     font-size: 14px;
-    min-width: 120px;
-    min-height: 40px;
+    min-width: 100px;
+    min-height: 15px;
 }
 
 .btn-primary:hover {
@@ -136,8 +136,8 @@ entry text {
     font-family: 'Inter', sans-serif;
     font-weight: 400;
     font-size: 14px;
-    min-width: 120px;
-    min-height: 40px;
+    min-width: 100px;
+    min-height: 15px;
 }
 
 .btn-secondary:hover {
@@ -168,7 +168,7 @@ entry text {
 .nav-buttons {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 60px;
     margin: 0;
     padding: 0;
     border: none;
@@ -314,27 +314,30 @@ scrolledwindow {
 
 .language-left-panel {
     background: transparent;
-    padding: 20px;
+    padding: 40px 20px 20px 40px;
     min-width: 300px;
 }
 
 .language-icon {
     margin-top: 20px;
+    width: 80px;
+    height: 80px;
 }
 
 .language-title {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 28px;
+    font-size: 32px;
     color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    margin-top: 10px;
 }
 
 .language-right-panel {
-    padding: 20px 40px 120px 40px;
+    padding: 40px 60px 120px 20px;
     margin-left: auto;
-    min-width: 400px;
-    max-width: 500px;
+    min-width: 420px;
+    max-width: 520px;
 }
 
 .language-header {
@@ -346,8 +349,8 @@ scrolledwindow {
     background: #1A1A1A;
     border: 1px solid #2A2A2A;
     border-radius: 12px;
-    min-height: 300px;
-    max-height: 350px;
+    min-height: 260px;
+    max-height: 320px;
     width: 100%;
 }
 
