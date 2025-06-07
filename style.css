@@ -1,0 +1,297 @@
+/* GTK4 Installer Custom Styling */
+
+/* Window and main container */
+window {
+    background-color: #0D0D0D;
+    color: #FFFFFF;
+}
+
+/* Main page container */
+.installer-page {
+    background: #0D0D0D;
+    border: 1px solid #2A2A2A;
+    border-radius: 8px;
+    padding: 40px;
+    margin: 20px;
+}
+
+/* Header styling */
+.installer-header {
+    background: #0D0D0D;
+    border-bottom: 1px solid #2A2A2A;
+}
+
+.installer-header label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+/* Page titles */
+.page-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 24px;
+    letter-spacing: 0.04em;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+}
+
+/* Page subtitles */
+.page-subtitle {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 22px;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    margin-bottom: 16px;
+}
+
+/* Page descriptions */
+.page-description {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 18px;
+    letter-spacing: 0.01em;
+    color: #FFFFFF;
+    margin-bottom: 32px;
+}
+
+/* Form labels */
+.form-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0.05em;
+    color: #FFFFFF;
+    margin-bottom: 8px;
+}
+
+/* Text entries and input fields */
+entry {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+    color: #FFFFFF;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 34px;
+}
+
+entry:focus {
+    border-color: #4490EC;
+    box-shadow: 0 0 0 2px rgba(68, 144, 236, 0.2);
+}
+
+entry::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+}
+
+/* Primary buttons */
+.btn-primary {
+    background: #4490EC;
+    border: 1px solid #5197EC;
+    border-radius: 6px;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    min-width: 134px;
+    min-height: 36px;
+}
+
+.btn-primary:hover {
+    background: #5197EC;
+}
+
+.btn-primary:active {
+    background: #3A85D9;
+}
+
+/* Secondary buttons */
+.btn-secondary {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+    color: #FFFFFF;
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    min-width: 134px;
+    min-height: 36px;
+}
+
+.btn-secondary:hover {
+    background: #2A2A2A;
+}
+
+.btn-secondary:active {
+    background: #1A1A1A;
+}
+
+/* Disabled buttons */
+.btn-disabled {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+    min-width: 134px;
+    min-height: 36px;
+}
+
+/* Navigation buttons container */
+.nav-buttons {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #2A2A2A;
+}
+
+/* List items */
+listview, listbox {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+}
+
+row {
+    background: transparent;
+    color: #FFFFFF;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    border-bottom: 1px solid #2A2A2A;
+}
+
+row:hover {
+    background: #2A2A2A;
+}
+
+row:selected {
+    background: #4490EC;
+}
+
+row:last-child {
+    border-bottom: none;
+}
+
+/* Dropdown menus */
+dropdown {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+    color: #FFFFFF;
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    min-height: 34px;
+}
+
+/* Check buttons and radio buttons */
+checkbutton, radiobutton {
+    color: #FFFFFF;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+}
+
+checkbutton check, radiobutton radio {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 3px;
+}
+
+checkbutton check:checked, radiobutton radio:checked {
+    background: #4490EC;
+    border-color: #5197EC;
+}
+
+/* Progress bars */
+progressbar {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+}
+
+progressbar progress {
+    background: #4490EC;
+    border-radius: 4px;
+}
+
+/* Separators */
+separator {
+    background: #2A2A2A;
+}
+
+/* Scrolled windows */
+scrolledwindow {
+    background: #1E1E1E;
+    border: 1px solid #2A2A2A;
+    border-radius: 6px;
+}
+
+/* Avatar/profile image placeholder */
+.avatar-placeholder {
+    background: #FFFFFF;
+    border-radius: 68px;
+    width: 136px;
+    height: 136px;
+    margin: 20px auto;
+}
+
+/* Form sections */
+.form-section {
+    margin-bottom: 24px;
+}
+
+.form-row {
+    margin-bottom: 16px;
+}
+
+/* Warning and info text */
+.warning-text {
+    color: #FF6B6B;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.info-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+/* Grid layouts */
+.options-grid {
+    margin: 20px 0;
+}
+
+/* Spacing utilities */
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mb-32 { margin-bottom: 32px; }
+
+.mt-8 { margin-top: 8px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.mt-32 { margin-top: 32px; }
+
+.p-16 { padding: 16px; }
+.p-24 { padding: 24px; }
+.p-32 { padding: 32px; }

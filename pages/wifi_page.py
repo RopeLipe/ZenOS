@@ -1,372 +1,322 @@
 """
-WiFi network configuration page.
+WiFi Setup Page
 """
 
 import gi
-gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib, Gio
+gi.require_version('Gtk', '4.0')
+from gi.repository import Gtk, GLib
 from .base_page import BasePage
-from utils.system_utils import get_wifi_networks
-from utils.validation import validate_wifi_password
-import subprocess
 
-
-class WiFiPage(BasePage):
-    """Page for WiFi network configuration."""
-      def __init__(self):
-        super().__init__(
-            "Network Configuration", 
-            "Configure your WiFi connection (optional)."
+class WifiPage(BasePage):
+    def __init__(self, navigate_callback):
+        super().__init__(navigate_callback)
+        self.setup_page()
+        
+    def setup_page(self):
+        # Create header
+        self.create_header(
+            "Network",
+            "Connect to WiFi",
+            "Connect to a wireless network to download updates and additional software."
         )
         
-        # Check if we're on Ethernet connection
-        self.has_ethernet = self._check_ethernet_connection()
+        # WiFi setup
+        self.setup_wifi_interface()
         
-        if self.has_ethernet:
-            # Show Ethernet status
-            ethernet_card = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-            ethernet_card.add_css_class("card")
-            ethernet_card.set_margin_bottom(16)
-            
-            ethernet_icon = Gtk.Image.new_from_icon_name("network-wired-symbolic")
-            ethernet_icon.set_icon_size(Gtk.IconSize.LARGE)
-            ethernet_card.append(ethernet_icon)
-            
-            ethernet_info = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            ethernet_title = Gtk.Label(label="Ethernet Connection Active")
-            ethernet_title.add_css_class("heading")
-            ethernet_title.set_halign(Gtk.Align.START)
-            ethernet_info.append(ethernet_title)
-            
-            ethernet_desc = Gtk.Label(label="You're already connected via Ethernet")
-            ethernet_desc.add_css_class("dim-label")
-            ethernet_desc.set_halign(Gtk.Align.START)
-            ethernet_info.append(ethernet_desc)
-            
-            ethernet_card.append(ethernet_info)
-            self.content_box.append(ethernet_card)
+        # Setup navigation
+        self.back_btn.connect("clicked", lambda x: self.navigate("disk"))
+        self.continue_btn.connect("clicked", self.on_continue)
         
-        # Skip button
-        skip_button = Gtk.Button(label="Skip WiFi Configuration")
-        skip_button.add_css_class("pill")
-        skip_button.connect("clicked", self._on_skip_clicked)
-        skip_button.set_halign(Gtk.Align.START)
-        self.content_box.append(skip_button)
+        # Skip button for wired connections
+        skip_btn = Gtk.Button(label="Skip (Use Wired)")
+        skip_btn.add_css_class("btn-secondary")
+        skip_btn.connect("clicked", lambda x: self.navigate("user"))
+        self.nav_box.prepend(skip_btn)
         
-        # Separator
-        separator = Gtk.Separator()
-        separator.set_margin_top(16)
-        separator.set_margin_bottom(16)
-        self.content_box.append(separator)
+    def setup_wifi_interface(self):
+        """Setup WiFi interface"""
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        main_box.set_spacing(20)
         
-        # WiFi configuration box (hide if Ethernet is active)
-        self.wifi_config_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
-        if self.has_ethernet:
-            self.wifi_config_box.set_visible(False)        
-        # Network selection with signal strength
-        network_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        network_card.add_css_class("card")
+        # WiFi toggle and refresh
+        control_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        control_box.set_spacing(12)
         
-        network_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        network_label = Gtk.Label(label="Available Networks:")
-        network_label.set_halign(Gtk.Align.START)
-        network_label.add_css_class("heading")
-        network_header.append(network_label)
+        # WiFi enable toggle
+        self.wifi_switch = Gtk.Switch()
+        self.wifi_switch.set_active(True)
+        self.wifi_switch.connect("state-set", self.on_wifi_toggled)
         
-        # Refresh button with icon
-        refresh_button = Gtk.Button()
-        refresh_button.set_icon_name("view-refresh-symbolic")
-        refresh_button.add_css_class("circular")
-        refresh_button.set_tooltip_text("Scan for networks")
-        refresh_button.connect("clicked", self._on_scan_networks)
-        network_header.append(refresh_button)
+        wifi_label = Gtk.Label(label="WiFi Enabled")
+        wifi_label.add_css_class("form-label")
         
-        network_card.append(network_header)
+        # Refresh button
+        refresh_btn = Gtk.Button(label="🔄 Refresh")
+        refresh_btn.add_css_class("btn-secondary")
+        refresh_btn.connect("clicked", self.on_refresh_networks)
         
-        # Network ComboBox with search
-        self.network_combo = Gtk.ComboBoxText.new_with_entry()
-        self.network_combo.set_entry_text_column(0)
-        self.network_combo.get_child().set_placeholder_text("Select or search for a network...")
-        self.network_combo.connect("changed", self._on_network_selected)
-        network_card.append(self.network_combo)
+        control_box.append(wifi_label)
+        control_box.append(self.wifi_switch)
+        control_box.append(refresh_btn)
         
-        self.wifi_config_box.append(network_card)
-          # Password entry with signal strength indicator
-        self.password_card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        self.password_card.add_css_class("card")
-        self.password_card.set_visible(False)
+        main_box.append(control_box)
         
-        password_header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        # Available networks
+        networks_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        networks_box.set_spacing(8)
         
-        self.signal_icon = Gtk.Image()
-        self.signal_icon.set_icon_size(Gtk.IconSize.NORMAL)
-        password_header.append(self.signal_icon)
+        networks_label = Gtk.Label(label="Available Networks:")
+        networks_label.add_css_class("form-label")
+        networks_label.set_halign(Gtk.Align.START)
+        networks_box.append(networks_label)
         
-        password_label = Gtk.Label(label="Network Password:")
-        password_label.set_halign(Gtk.Align.START)
-        password_label.add_css_class("heading")
-        password_header.append(password_label)
+        self.networks_list = self.create_networks_list()
+        networks_box.append(self.networks_list)
         
-        self.password_card.append(password_header)
-        
-        # Password entry with eye toggle
-        password_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        password_box.add_css_class("linked")
-        
-        self.password_entry = Gtk.Entry()
-        self.password_entry.set_placeholder_text("Enter WiFi password")
-        self.password_entry.set_visibility(False)
-        self.password_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
-        self.password_entry.set_hexpand(True)
-        self.password_entry.connect("changed", self._on_password_changed)
-        password_box.append(self.password_entry)
-        
-        self.password_toggle = Gtk.Button()
-        self.password_toggle.set_icon_name("view-conceal-symbolic")
-        self.password_toggle.set_tooltip_text("Show/hide password")
-        self.password_toggle.add_css_class("flat")
-        self.password_toggle.connect("clicked", self._on_password_toggle)
-        password_box.append(self.password_toggle)
-        
-        self.password_card.append(password_box)
-        
-        self.wifi_config_box.append(self.password_card)
-        
-        # Test connection button
-        self.test_button = Gtk.Button(label="Test Connection")
-        self.test_button.connect("clicked", self._on_test_connection)
-        self.test_button.set_halign(Gtk.Align.START)
-        self.test_button.set_sensitive(False)
-        self.wifi_config_box.append(self.test_button)
+        main_box.append(networks_box)
         
         # Connection status
-        self.status_label = Gtk.Label()
+        self.status_label = Gtk.Label(label="Not connected")
+        self.status_label.add_css_class("info-text")
         self.status_label.set_halign(Gtk.Align.START)
-        self.status_label.set_visible(False)
-        self.wifi_config_box.append(self.status_label)
+        main_box.append(self.status_label)
         
-        self.content_box.append(self.wifi_config_box)
+        # Password entry (initially hidden)
+        self.password_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.password_box.set_spacing(8)
+        self.password_box.set_visible(False)
         
-        # Additional info
-        info_label = Gtk.Label()
-        info_label.set_markup(
-            "<small>WiFi configuration is optional but recommended for downloading "
-            "updates during installation. If you skip this step, you can configure "
-            "networking after the installation is complete.</small>"
-        )
-        info_label.set_wrap(True)
-        info_label.set_halign(Gtk.Align.START)
-        info_label.add_css_class("dim-label")
-        info_label.set_margin_top(16)
-        self.content_box.append(info_label)
-          # Load initial network list
-        self._load_networks()
+        password_row = self.create_form_row("WiFi Password:", self.create_password_entry())
+        connect_btn_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         
-        # Skip state
-        self.skip_wifi = False
-    
-    def _check_ethernet_connection(self):
-        """Check if Ethernet connection is active."""
-        try:
-            result = subprocess.run(
-                ["nmcli", "-t", "-f", "TYPE,STATE", "dev"], 
-                capture_output=True, text=True
-            )
-            lines = result.stdout.strip().split('\n')
-            for line in lines:
-                if line.startswith('ethernet:') and 'connected' in line:
-                    return True
-        except:
-            pass
-        return False
-    
-    def _on_skip_clicked(self, button):
-        """Handle skip WiFi button click."""
-        self.skip_wifi = True
-        self.wifi_config_box.set_visible(False)
-        self.hide_error()
+        self.connect_btn = Gtk.Button(label="Connect")
+        self.connect_btn.add_css_class("btn-primary")
+        self.connect_btn.connect("clicked", self.on_connect_wifi)
         
-        # Show skip confirmation
-        self.show_message("WiFi configuration skipped. You can set up networking after installation.", "info")
-    
-    def _update_signal_strength(self, ssid):
-        """Update signal strength icon for selected network."""
-        # Get signal strength (mock implementation)
-        strength = self._get_signal_strength(ssid)
+        cancel_btn = Gtk.Button(label="Cancel")
+        cancel_btn.add_css_class("btn-secondary")
+        cancel_btn.connect("clicked", self.on_cancel_connection)
         
-        if strength >= 75:
-            self.signal_icon.set_from_icon_name("network-wireless-signal-excellent-symbolic")
-        elif strength >= 50:
-            self.signal_icon.set_from_icon_name("network-wireless-signal-good-symbolic")
-        elif strength >= 25:
-            self.signal_icon.set_from_icon_name("network-wireless-signal-ok-symbolic")
+        connect_btn_row.append(self.connect_btn)
+        connect_btn_row.append(cancel_btn)
+        connect_btn_row.set_spacing(12)
+        
+        self.password_box.append(password_row)
+        self.password_box.append(connect_btn_row)
+        
+        main_box.append(self.password_box)
+        
+        self.content_box.append(main_box)
+        
+        # Start network scan
+        self.scan_networks()
+        
+    def create_networks_list(self):
+        """Create WiFi networks list"""
+        scrolled = Gtk.ScrolledWindow()
+        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolled.set_min_content_height(200)
+        
+        self.networks_listbox = Gtk.ListBox()
+        self.networks_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
+        self.networks_listbox.connect("row-selected", self.on_network_selected)
+        
+        scrolled.set_child(self.networks_listbox)
+        return scrolled
+        
+    def create_password_entry(self):
+        """Create WiFi password entry"""
+        self.wifi_password = Gtk.Entry()
+        self.wifi_password.set_visibility(False)
+        self.wifi_password.set_placeholder_text("Enter WiFi password")
+        self.wifi_password.connect("activate", lambda x: self.on_connect_wifi(None))
+        return self.wifi_password
+        
+    def scan_networks(self):
+        """Simulate network scanning"""
+        # Clear existing networks
+        while True:
+            row = self.networks_listbox.get_row_at_index(0)
+            if row is None:
+                break
+            self.networks_listbox.remove(row)
+        
+        # Add loading indicator
+        loading_row = Gtk.ListBoxRow()
+        loading_label = Gtk.Label(label="🔄 Scanning for networks...")
+        loading_label.set_margin_start(12)
+        loading_label.set_margin_end(12)
+        loading_label.set_margin_top(12)
+        loading_label.set_margin_bottom(12)
+        loading_row.set_child(loading_label)
+        self.networks_listbox.append(loading_row)
+        
+        # Simulate scan delay
+        GLib.timeout_add_seconds(2, self.populate_networks)
+        
+    def populate_networks(self):
+        """Populate with mock network data"""
+        # Remove loading indicator
+        while True:
+            row = self.networks_listbox.get_row_at_index(0)
+            if row is None:
+                break
+            self.networks_listbox.remove(row)
+        
+        # Mock WiFi networks
+        networks = [
+            {"ssid": "HomeNetwork_5G", "signal": "▂▄▆█", "security": "WPA2", "strength": 85},
+            {"ssid": "CoffeeShop_WiFi", "signal": "▂▄▆▇", "security": "Open", "strength": 70},
+            {"ssid": "Neighbor_WiFi", "signal": "▂▄▇", "security": "WPA3", "strength": 60},
+            {"ssid": "Office_Guest", "signal": "▂▄", "security": "WPA2", "strength": 45},
+            {"ssid": "Mobile_Hotspot", "signal": "▂", "security": "WPA2", "strength": 30},
+        ]
+        
+        for network in networks:
+            row = Gtk.ListBoxRow()
+            row.set_margin_start(12)
+            row.set_margin_end(12)
+            row.set_margin_top(8)
+            row.set_margin_bottom(8)
+            
+            network_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            network_box.set_spacing(12)
+            
+            # Network info
+            info_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            info_box.set_spacing(2)
+            
+            # SSID
+            ssid_label = Gtk.Label(label=network["ssid"])
+            ssid_label.set_halign(Gtk.Align.START)
+            ssid_label.add_css_class("page-subtitle")
+            info_box.append(ssid_label)
+            
+            # Security info
+            security_label = Gtk.Label(label=f"Security: {network['security']}")
+            security_label.set_halign(Gtk.Align.START)
+            security_label.add_css_class("info-text")
+            info_box.append(security_label)
+            
+            network_box.append(info_box)
+            
+            # Signal strength
+            signal_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            signal_box.set_valign(Gtk.Align.CENTER)
+            
+            signal_label = Gtk.Label(label=network["signal"])
+            signal_label.add_css_class("page-subtitle")
+            signal_box.append(signal_label)
+            
+            strength_label = Gtk.Label(label=f"{network['strength']}%")
+            strength_label.add_css_class("info-text")
+            signal_box.append(strength_label)
+            
+            network_box.append(signal_box)
+            
+            row.set_child(network_box)
+            row.network_info = network
+            self.networks_listbox.append(row)
+        
+        return False  # Don't repeat timeout
+        
+    def on_wifi_toggled(self, switch, state):
+        """Handle WiFi toggle"""
+        if state:
+            self.scan_networks()
+            self.status_label.set_text("WiFi enabled, scanning...")
         else:
-            self.signal_icon.set_from_icon_name("network-wireless-signal-weak-symbolic")
-      def _get_signal_strength(self, ssid):
-        """Get signal strength for network (mock implementation)."""
-        # In real implementation, parse nmcli output for signal strength
-        import random
-        return random.randint(20, 100)
-    
-    def _signal_bars(self, strength):
-        """Convert signal strength to bar representation."""
-        if strength >= 75:
-            return "▂▄▆█"
-        elif strength >= 50:
-            return "▂▄▆"
-        elif strength >= 25:
-            return "▂▄"
-        else:
-            return "▂"
-    
-    def _load_networks(self):
-        """Load available WiFi networks."""
-        networks = get_wifi_networks()
+            # Clear networks list
+            while True:
+                row = self.networks_listbox.get_row_at_index(0)
+                if row is None:
+                    break
+                self.networks_listbox.remove(row)
+            
+            self.status_label.set_text("WiFi disabled")
+            self.password_box.set_visible(False)
         
-        # Clear existing items
-        self.network_combo.remove_all()
-        
-        if networks:
-            for network in networks:
-                # Add signal strength indicator to network name
-                strength = self._get_signal_strength(network)
-                display_name = f"{network} ({self._signal_bars(strength)})"
-                self.network_combo.append_text(display_name)
-        else:
-            self.network_combo.append_text("No networks found")
-    
-    def _on_scan_networks(self, button):
-        """Scan for WiFi networks."""
-        button.set_sensitive(False)
-        
-        def scan_complete():
-            button.set_sensitive(True)
-            self._load_networks()
-            return False
-        
-        # Schedule scan completion (in real implementation, this would be async)
-        GLib.timeout_add(2000, scan_complete)
-        
-        # Trigger actual network scan
-        try:
-            subprocess.run(["nmcli", "dev", "wifi", "rescan"], 
-                         capture_output=True, timeout=10)
-        except:
-            pass  # Ignore scan errors
-    
-    def _on_network_selected(self, combo):
-        """Handle network selection."""
-        text = combo.get_active_text()
-        if text and text != "No networks found":
-            # Extract original network name (before signal bars)
-            ssid = text.split(" (")[0] if " (" in text else text
-            self._update_signal_strength(ssid)
-            self.password_card.set_visible(True)
-            self._update_test_button()
-        else:
-            self.password_card.set_visible(False)
-        
-        self.status_label.set_visible(False)
-    
-    def _on_password_changed(self, entry):
-        """Handle password entry changes."""
-        self._update_test_button()
-    
-    def _on_password_toggle(self, button):
-        """Toggle password visibility."""
-        visible = not self.password_entry.get_visibility()
-        self.password_entry.set_visibility(visible)
-        
-        # Update icon
-        if visible:
-            button.set_icon_name("view-reveal-symbolic")
-            button.set_tooltip_text("Hide password")
-        else:
-            button.set_icon_name("view-conceal-symbolic")
-            button.set_tooltip_text("Show password")
-    
-    def _update_test_button(self):
-        """Update test button sensitivity."""
-        text = self.network_combo.get_active_text()
-        has_selection = text and text != "No networks found"
-        has_password = len(self.password_entry.get_text()) > 0
-        
-        self.test_button.set_sensitive(has_selection and has_password)
-    
-    def _on_test_connection(self, button):
-        """Test WiFi connection."""
-        button.set_sensitive(False)
-        button.set_label("Testing...")
-        
-        text = self.network_combo.get_active_text()
-        if not text:
+    def on_refresh_networks(self, button):
+        """Handle refresh button click"""
+        if self.wifi_switch.get_active():
+            self.scan_networks()
+            
+    def on_network_selected(self, listbox, row):
+        """Handle network selection"""
+        if not row or not hasattr(row, 'network_info'):
             return
-        
-        # Extract original network name
-        ssid = text.split(" (")[0] if " (" in text else text
-        password = self.password_entry.get_text()
-        
-        def test_complete(success, message):
-            button.set_sensitive(True)
-            button.set_label("Test Connection")
             
-            self.status_label.set_text(message)
-            if success:
-                self.status_label.add_css_class("success")
-                self.status_label.remove_css_class("error")
-            else:
-                self.status_label.add_css_class("error")
-                self.status_label.remove_css_class("success")
-            self.status_label.set_visible(True)
-            return False
+        network = row.network_info
         
-        # Simulate connection test (in real implementation, this would be async)
-        try:
-            result = subprocess.run([
-                "nmcli", "dev", "wifi", "connect", ssid, "password", password
-            ], capture_output=True, text=True, timeout=15)
+        if network["security"] == "Open":
+            # Open network, connect immediately
+            self.password_box.set_visible(False)
+            self.connect_to_network(network, "")
+        else:
+            # Secured network, show password entry
+            self.password_box.set_visible(True)
+            self.wifi_password.set_text("")
+            self.wifi_password.grab_focus()
             
-            if result.returncode == 0:
-                GLib.timeout_add(1000, lambda: test_complete(True, "✓ Connection successful"))
-            else:
-                error_msg = result.stderr.strip() if result.stderr else "Connection failed"
-                GLib.timeout_add(1000, lambda: test_complete(False, f"✗ {error_msg}"))
-        except Exception as e:
-            GLib.timeout_add(1000, lambda: test_complete(False, f"✗ Connection test failed: {str(e)}"))
-    
-    def get_data(self) -> dict:
-        """Get WiFi configuration data."""
-        if self.skip_wifi:
-            return {"wifi_ssid": "", "wifi_password": ""}
+    def on_connect_wifi(self, button):
+        """Handle connect button click"""
+        selected_row = self.networks_listbox.get_selected_row()
+        if not selected_row or not hasattr(selected_row, 'network_info'):
+            return
+            
+        network = selected_row.network_info
+        password = self.wifi_password.get_text()
         
-        text = self.network_combo.get_active_text()
-        if text and text != "No networks found":
-            # Extract original network name
-            ssid = text.split(" (")[0] if " (" in text else text
-            return {
-                "wifi_ssid": ssid,
-                "wifi_password": self.password_entry.get_text()
-            }
+        if network["security"] != "Open" and not password:
+            self.show_error("Please enter the WiFi password.")
+            return
+            
+        self.connect_to_network(network, password)
         
-        return {"wifi_ssid": "", "wifi_password": ""}
-    
-    def validate(self) -> tuple[bool, str]:
-        """Validate WiFi configuration."""
-        if self.skip_wifi:
-            return True, ""
+    def on_cancel_connection(self, button):
+        """Handle cancel button click"""
+        self.password_box.set_visible(False)
+        self.networks_listbox.unselect_all()
         
-        data = self.get_data()
-        ssid = data.get("wifi_ssid", "")
-        password = data.get("wifi_password", "")
+    def connect_to_network(self, network, password):
+        """Simulate network connection"""
+        self.status_label.set_text(f"Connecting to {network['ssid']}...")
+        self.connect_btn.set_sensitive(False)
         
-        if ssid and ssid != "No networks found":
-            return validate_wifi_password(password, ssid)
-        elif not ssid:
-            return False, "Please select a network or skip WiFi configuration"
+        # Simulate connection delay
+        GLib.timeout_add_seconds(3, self.on_connection_complete, network)
         
-        return True, ""
-    
-    def on_page_enter(self):
-        """Refresh network list when entering page."""
-        if not self.skip_wifi:
-            self._load_networks()
+    def on_connection_complete(self, network):
+        """Handle connection completion"""
+        self.status_label.set_text(f"Connected to {network['ssid']}")
+        self.password_box.set_visible(False)
+        self.connect_btn.set_sensitive(True)
+        
+        # Enable continue button
+        self.continue_btn.set_sensitive(True)
+        
+        return False  # Don't repeat timeout
+        
+    def show_error(self, message):
+        """Show error dialog"""
+        dialog = Gtk.MessageDialog(
+            transient_for=self.get_root(),
+            modal=True,
+            message_type=Gtk.MessageType.ERROR,
+            buttons=Gtk.ButtonsType.OK,
+            text=message
+        )
+        dialog.connect("response", lambda d, r: d.destroy())
+        dialog.present()
+        
+    def on_continue(self, button):
+        """Handle continue button click"""
+        # Check if connected
+        status_text = self.status_label.get_text()
+        if "Connected to" in status_text:
+            network_name = status_text.replace("Connected to ", "")
+            print(f"Connected to WiFi: {network_name}")
+        else:
+            print("Continuing without WiFi connection")
+            
+        self.navigate("user")

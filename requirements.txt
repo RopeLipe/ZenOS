@@ -1,10 +1,2 @@
-# Python dependencies for the GTK installer
-# Install with: pip install -r requirements.txt
-
-# GTK4 bindings for Python
 PyGObject>=3.42.0
-
-# Additional system packages needed:
-# Ubuntu/Debian: sudo apt install python3-gi python3-gi-cairo gir1.2-gtk-4.0 gir1.2-adw-1 dbus-x11
-# Fedora: sudo dnf install python3-gobject gtk4-devel libadwaita-devel dbus-x11
-# Arch: sudo pacman -S python-gobject gtk4 libadwaita dbus
+pycairo>=1.20.0

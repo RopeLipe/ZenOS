@@ -1,220 +1,62 @@
 """
-Disk selection page for installation.
+Disk Selection Page
 """
 
 import gi
-gi.require_version("Gtk", "4.0")
-from gi.repository import Gtk, GLib
+gi.require_version('Gtk', '4.0')
+from gi.repository import Gtk
 from .base_page import BasePage
-from utils.system_utils import get_disks
-from utils.validation import validate_disk_selection
-
 
 class DiskPage(BasePage):
-    """Page for selecting installation disk."""
-    
-    def __init__(self):
-        super().__init__(
-            "Installation Disk", 
-            "Choose the disk where the system will be installed. All data on this disk will be erased!"
+    def __init__(self, navigate_callback):
+        super().__init__(navigate_callback)
+        self.setup_page()
+        
+    def setup_page(self):
+        # Create header
+        self.create_header(
+            "Storage",
+            "Select Installation Disk",
+            "Choose where to install the system. WARNING: This will erase all data on the selected disk."
         )
         
-        # Warning box
-        warning_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        warning_box.add_css_class("warning")
-        warning_box.set_margin_bottom(20)
-          warning_icon = Gtk.Image.new_from_icon_name("dialog-warning")
-        warning_icon.set_icon_size(Gtk.IconSize.NORMAL)
-        warning_box.append(warning_icon)
+        # Disk selection
+        self.setup_disk_selection()
         
-        warning_label = Gtk.Label()
-        warning_label.set_markup("<b>WARNING:</b> All data on the selected disk will be permanently erased!")
-        warning_label.set_wrap(True)
-        warning_box.append(warning_label)
+        # Setup navigation
+        self.back_btn.connect("clicked", lambda x: self.navigate("keyboard"))
+        self.continue_btn.connect("clicked", self.on_continue)
         
-        self.content_box.append(warning_box)
-          # Disk selection with modern header
-        disk_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+    def setup_disk_selection(self):
+        """Setup disk selection interface"""
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        main_box.set_spacing(20)
         
-        # Header with title and refresh button
-        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+        # Disk list
+        disk_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        disk_box.set_spacing(8)
         
         disk_label = Gtk.Label(label="Available Disks:")
+        disk_label.add_css_class("form-label")
         disk_label.set_halign(Gtk.Align.START)
-        disk_label.set_hexpand(True)
-        header_box.append(disk_label)
+        disk_box.append(disk_label)
         
-        # Modern refresh button with icon
-        refresh_button = Gtk.Button()
-        refresh_button.set_icon_name("view-refresh-symbolic")
-        refresh_button.connect("clicked", self._on_refresh_disks)
-        refresh_button.add_css_class("refresh-button")
-        refresh_button.set_tooltip_text("Refresh disk list")
-        header_box.append(refresh_button)
+        self.disk_list = self.create_disk_list()
+        disk_box.append(self.disk_list)
         
-        disk_box.append(header_box)
+        main_box.append(disk_box)
         
+        # Installation options
+        options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        options_box.set_spacing(12)
         
-        # Container for disk list
-        self.disk_list_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        options_label = Gtk.Label(label="Installation Options:")
+        options_label.add_css_class("form-label")
+        options_label.set_halign(Gtk.Align.START)
+        options_box.append(options_label)
         
-        # Scrolled window for disk list
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scrolled.set_min_content_height(200)
-        scrolled.set_child(self.disk_list_box)
-        disk_box.append(scrolled)
+        # Installation type radio buttons
+        self.install_type_group = []
         
-        self.content_box.append(disk_box)
-        
-        # Selected disk info
-        self.selected_info = Gtk.Label()
-        self.selected_info.set_halign(Gtk.Align.START)
-        self.selected_info.set_visible(False)
-        self.selected_info.add_css_class("success")
-        self.content_box.append(self.selected_info)
-        
-        # Additional info
-        info_label = Gtk.Label()
-        info_label.set_markup(
-            "<small><b>Important:</b> Make sure you have backed up any important data. "
-            "The installation will create a new partition table and format the entire disk. "
-            "This action cannot be undone.</small>"
-        )
-        info_label.set_wrap(True)
-        info_label.set_halign(Gtk.Align.START)
-        info_label.add_css_class("dim-label")
-        info_label.set_margin_top(16)
-        self.content_box.append(info_label)
-        
-        # Store selected disk info
-        self.selected_disk = None
-        
-        # Load initial disk list
-        self._load_disks()
-    
-    def _load_disks(self):
-        """Load available disks and create selection buttons."""
-        # Clear existing disk list
-        child = self.disk_list_box.get_first_child()
-        while child:
-            next_child = child.get_next_sibling()
-            self.disk_list_box.remove(child)
-            child = next_child
-        
-        disks = get_disks()
-        
-        if not disks:
-            no_disks_label = Gtk.Label(label="No suitable disks found. Please connect a disk and refresh.")
-            no_disks_label.add_css_class("error")
-            no_disks_label.set_halign(Gtk.Align.START)
-            self.disk_list_box.append(no_disks_label)
-            return
-          # Create radio buttons for disk selection with modern card styling
-        group_button = None
-        for disk in disks:
-            # Create card container
-            card_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-            card_box.add_css_class("card")
-            card_box.set_margin_top(4)
-            card_box.set_margin_bottom(4)
-            
-            # Radio button
-            disk_button = Gtk.CheckButton()
-            if group_button is None:
-                group_button = disk_button
-            else:
-                disk_button.set_group(group_button)
-            
-            disk_button.connect("toggled", self._on_disk_selected, disk)
-            disk_button.set_valign(Gtk.Align.CENTER)
-            card_box.append(disk_button)
-            
-            # Modern disk icon with better styling
-            disk_icon = Gtk.Image.new_from_icon_name("drive-harddisk-system-symbolic")
-            disk_icon.set_icon_size(Gtk.IconSize.LARGE)
-            disk_icon.set_pixel_size(48)
-            disk_icon.add_css_class("disk-icon")
-            disk_icon.set_valign(Gtk.Align.CENTER)
-            card_box.append(disk_icon)
-            
-            # Disk details with improved layout
-            details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-            details_box.set_hexpand(True)
-            details_box.set_valign(Gtk.Align.CENTER)
-            
-            # Disk name with larger, bold text
-            name_label = Gtk.Label()
-            name_label.set_markup(f"<span size='large' weight='bold'>{disk['name']}</span>")
-            name_label.set_halign(Gtk.Align.START)
-            details_box.append(name_label)
-            
-            # Disk info with better formatting
-            info_text = f"<span color='#666666'>Size: {disk['size']}"
-            if disk['model'] != 'Unknown':
-                info_text += f" • Model: {disk['model']}"
-            info_text += "</span>"
-            
-            info_label = Gtk.Label()
-            info_label.set_markup(info_text)
-            info_label.set_halign(Gtk.Align.START)
-            details_box.append(info_label)
-            
-            card_box.append(details_box)
-            
-            # Make the whole card clickable
-            clickable = Gtk.Button()
-            clickable.set_child(card_box)
-            clickable.add_css_class("flat")
-            clickable.connect("clicked", lambda btn, db=disk_button: db.set_active(True))
-            
-            # Store reference for selection styling
-            clickable.connect("clicked", lambda btn, cb=card_box: self._update_disk_selection_styling(cb))
-            
-            self.disk_list_box.append(clickable)
-    
-    def _update_disk_selection_styling(self, selected_card):
-        """Update card styling to show selection."""
-        # Remove selection styling from all cards
-        child = self.disk_list_box.get_first_child()
-        while child:
-            if hasattr(child, 'get_child'):
-                card = child.get_child()
-                if card:
-                    card.remove_css_class("selected")
-            child = child.get_next_sibling()
-        
-        # Add selection styling to selected card
-        selected_card.add_css_class("selected")
-    
-    def _on_refresh_disks(self, button):
-        """Refresh the disk list."""
-        self._load_disks()
-        self.selected_disk = None
-        self.selected_info.set_visible(False)
-    
-    def _on_disk_selected(self, button, disk_info):
-        """Handle disk selection."""
-        if button.get_active():
-            self.selected_disk = disk_info
-            self.selected_info.set_text(f"Selected: {disk_info['display']}")
-            self.selected_info.set_visible(True)
-            self.hide_error()
-    
-    def get_data(self) -> dict:
-        """Get the selected disk."""
-        if self.selected_disk:
-            return {
-                "disk": self.selected_disk['name'],
-                "disk_info": self.selected_disk
-            }
-        return {"disk": "", "disk_info": {}}
-    
-    def validate(self) -> tuple[bool, str]:
-        """Validate disk selection."""
-        data = self.get_data()
-        return validate_disk_selection(data.get("disk_info", {}))
-    
-    def on_page_enter(self):
-        """Refresh disk list when entering the page."""
-        self._load_disks()
+        # Erase and install
+        erase_radio = Gtk.CheckButton(label=\"Erase disk and install (Recommended)\")\n        erase_radio.set_active(True)\n        erase_radio.install_type = \"erase\"\n        self.install_type_group.append(erase_radio)\n        options_box.append(erase_radio)\n        \n        # Manual partitioning\n        manual_radio = Gtk.CheckButton(label=\"Manual partitioning (Advanced)\")\n        manual_radio.set_group(erase_radio)\n        manual_radio.install_type = \"manual\"\n        self.install_type_group.append(manual_radio)\n        options_box.append(manual_radio)\n        \n        main_box.append(options_box)\n        \n        # Encryption option\n        encrypt_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)\n        encrypt_box.set_spacing(8)\n        \n        self.encrypt_check = Gtk.CheckButton(label=\"Encrypt the installation for security\")\n        encrypt_box.append(self.encrypt_check)\n        \n        # Encryption password (initially hidden)\n        self.encrypt_password_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)\n        self.encrypt_password_box.set_spacing(8)\n        self.encrypt_password_box.set_visible(False)\n        \n        password_row = self.create_form_row(\"Encryption Password:\", self.create_password_entry())\n        confirm_row = self.create_form_row(\"Confirm Password:\", self.create_confirm_entry())\n        \n        self.encrypt_password_box.append(password_row)\n        self.encrypt_password_box.append(confirm_row)\n        \n        encrypt_box.append(self.encrypt_password_box)\n        \n        # Connect encryption checkbox\n        self.encrypt_check.connect(\"toggled\", self.on_encrypt_toggled)\n        \n        main_box.append(encrypt_box)\n        \n        # Warning message\n        warning_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)\n        warning_box.set_spacing(8)\n        warning_box.add_css_class(\"warning-text\")\n        \n        warning_icon = Gtk.Label(label=\"⚠️\")\n        warning_text = Gtk.Label(label=\"WARNING: This will permanently erase all data on the selected disk.\")\n        warning_text.set_wrap(True)\n        \n        warning_box.append(warning_icon)\n        warning_box.append(warning_text)\n        \n        main_box.append(warning_box)\n        \n        self.content_box.append(main_box)\n        \n    def create_disk_list(self):\n        \"\"\"Create disk selection list\"\"\"\n        scrolled = Gtk.ScrolledWindow()\n        scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)\n        scrolled.set_min_content_height(150)\n        \n        self.disk_listbox = Gtk.ListBox()\n        self.disk_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)\n        \n        # Mock disk data (in real app, this would come from system)\n        disks = [\n            {\n                \"name\": \"/dev/sda\",\n                \"size\": \"500 GB\",\n                \"type\": \"SSD\",\n                \"model\": \"Samsung SSD 850 EVO\"\n            },\n            {\n                \"name\": \"/dev/sdb\",\n                \"size\": \"1 TB\",\n                \"type\": \"HDD\",\n                \"model\": \"Western Digital Blue\"\n            },\n            {\n                \"name\": \"/dev/nvme0n1\",\n                \"size\": \"256 GB\",\n                \"type\": \"NVMe SSD\",\n                \"model\": \"Intel SSD 660p\"\n            }\n        ]\n        \n        for disk in disks:\n            row = Gtk.ListBoxRow()\n            row.set_margin_start(12)\n            row.set_margin_end(12)\n            row.set_margin_top(8)\n            row.set_margin_bottom(8)\n            \n            disk_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)\n            disk_box.set_spacing(4)\n            \n            # Disk name and size\n            name_label = Gtk.Label(label=f\"{disk['name']} - {disk['size']}\")\n            name_label.set_halign(Gtk.Align.START)\n            name_label.add_css_class(\"page-subtitle\")\n            disk_box.append(name_label)\n            \n            # Disk details\n            details_label = Gtk.Label(label=f\"{disk['type']} - {disk['model']}\")\n            details_label.set_halign(Gtk.Align.START)\n            details_label.add_css_class(\"info-text\")\n            disk_box.append(details_label)\n            \n            row.set_child(disk_box)\n            row.disk_info = disk\n            self.disk_listbox.append(row)\n        \n        # Select first disk by default\n        self.disk_listbox.select_row(self.disk_listbox.get_row_at_index(0))\n        \n        scrolled.set_child(self.disk_listbox)\n        return scrolled\n        \n    def create_password_entry(self):\n        \"\"\"Create encryption password entry\"\"\"\n        self.encrypt_password = Gtk.Entry()\n        self.encrypt_password.set_visibility(False)\n        self.encrypt_password.set_placeholder_text(\"Enter encryption password\")\n        return self.encrypt_password\n        \n    def create_confirm_entry(self):\n        \"\"\"Create password confirmation entry\"\"\"\n        self.confirm_password = Gtk.Entry()\n        self.confirm_password.set_visibility(False)\n        self.confirm_password.set_placeholder_text(\"Confirm encryption password\")\n        return self.confirm_password\n        \n    def on_encrypt_toggled(self, checkbox):\n        \"\"\"Handle encryption checkbox toggle\"\"\"\n        self.encrypt_password_box.set_visible(checkbox.get_active())\n        \n    def on_continue(self, button):\n        \"\"\"Handle continue button click\"\"\"\n        selected_disk = self.disk_listbox.get_selected_row()\n        if not selected_disk:\n            return\n            \n        disk_info = selected_disk.disk_info\n        \n        # Get selected installation type\n        install_type = \"erase\"\n        for radio in self.install_type_group:\n            if radio.get_active():\n                install_type = radio.install_type\n                break\n        \n        # Check encryption\n        encrypt = self.encrypt_check.get_active()\n        \n        if encrypt:\n            password = self.encrypt_password.get_text()\n            confirm = self.confirm_password.get_text()\n            \n            if not password:\n                self.show_error(\"Please enter an encryption password.\")\n                return\n            \n            if password != confirm:\n                self.show_error(\"Passwords do not match.\")\n                return\n        \n        print(f\"Selected disk: {disk_info['name']} ({disk_info['size']})\")\n        print(f\"Installation type: {install_type}\")\n        print(f\"Encryption: {encrypt}\")\n        \n        self.navigate(\"wifi\")\n        \n    def show_error(self, message):\n        \"\"\"Show error dialog\"\"\"\n        dialog = Gtk.MessageDialog(\n            transient_for=self.get_root(),\n            modal=True,\n            message_type=Gtk.MessageType.ERROR,\n            buttons=Gtk.ButtonsType.OK,\n            text=message\n        )\n        dialog.connect(\"response\", lambda d, r: d.destroy())\n        dialog.present()
