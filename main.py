@@ -4,6 +4,13 @@ GTK4 Installer - Main Application
 A modern installer interface with multiple configuration pages
 """
 
+# Debug helpers
+import os
+print(f"Current working directory: {os.getcwd()}")
+print(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
+print(f"Assets directory exists: {os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets'))}")
+print(f"Assets directory contents: {os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets'))}")
+
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')

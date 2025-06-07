@@ -320,8 +320,9 @@ scrolledwindow {
 
 .language-icon {
     margin-top: 20px;
-    width: 80px;
-    height: 80px;
+    min-width: 80px;
+    min-height: 80px;
+    filter: brightness(0) invert(1);  /* Make icon white */
 }
 
 .language-title {

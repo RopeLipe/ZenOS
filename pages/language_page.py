@@ -4,9 +4,14 @@ Language Selection Page
 
 import gi
 import os
+import sys
 gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gtk, Gio, GLib
 from .base_page import BasePage
+
+# Import helper function to load images
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from load_image import load_image_from_path
 
 class LanguagePage(BasePage):
     def __init__(self, navigate_callback):
@@ -26,12 +31,53 @@ class LanguagePage(BasePage):
         title_label = Gtk.Label(label="Language")
         title_label.add_css_class("language-title")
         title_label.set_halign(Gtk.Align.START)
-        left_panel.append(title_label)
-          # Language icon using image file
-        image = Gtk.Image()
-        image.set_from_file(os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "language-icon.png"))
-        image.add_css_class("language-icon")
-        left_panel.append(image)
+        left_panel.append(title_label)        # Language icon using image file        try:
+            # Get absolute path to icon file (multiple ways to ensure we find it)
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            icon_path = os.path.join(base_dir, "assets", "language-icon.png")
+            
+            # Alternative paths to try
+            alt_paths = [
+                os.path.join(os.getcwd(), "assets", "language-icon.png"),
+                os.path.join(base_dir, "language-icon.png"),
+                os.path.join("/home/developer/ZenOS/assets", "language-icon.png"),
+                os.path.join("/home/developer/ZenOS", "language-icon.png")
+            ]
+            
+            # Print debug info
+            print(f"Primary path: {icon_path}, exists: {os.path.exists(icon_path)}")
+            for path in alt_paths:
+                print(f"Alt path: {path}, exists: {os.path.exists(path)}")
+            
+            # Try to load with the primary path
+            if os.path.exists(icon_path):
+                # Create image widget
+                image = Gtk.Image()
+                image.set_from_file(icon_path)
+                image.set_size_request(64, 64)
+                image.add_css_class("language-icon")
+                left_panel.append(image)
+            else:
+                # Try alternative paths
+                loaded = False
+                for path in alt_paths:
+                    if os.path.exists(path):
+                        image = Gtk.Image()
+                        image.set_from_file(path)
+                        image.set_size_request(64, 64)
+                        image.add_css_class("language-icon")
+                        left_panel.append(image)
+                        loaded = True
+                        break
+                
+                if not loaded:
+                    raise Exception("Could not find icon file in any location")
+                except Exception as e:
+            print(f"Error loading icon: {e}")
+            # Fallback to label if image fails to load
+            icon_label = Gtk.Label(label="🌍")
+            icon_label.add_css_class("language-icon")
+            left_panel.append(icon_label)
         
         # Right panel with selection - moved more to the right
         right_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
