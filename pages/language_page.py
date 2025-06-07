@@ -9,7 +9,8 @@ from .base_page import BasePage
 
 class LanguagePage(BasePage):
     def __init__(self, navigate_callback):
-        super().__init__(navigate_callback)        self.setup_page()
+        super().__init__(navigate_callback)
+        self.setup_page()
     
     def setup_page(self):
         # Create main horizontal layout
@@ -19,9 +20,8 @@ class LanguagePage(BasePage):
         # Left panel with icon and title
         left_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         left_panel.add_css_class("language-left-panel")
-        
-        # Language icon
-        icon_label = Gtk.Label(label="🌐")
+          # Language icon - Modern globe icon using Unicode
+        icon_label = Gtk.Label(label="�")
         icon_label.add_css_class("language-icon")
         left_panel.append(icon_label)
         

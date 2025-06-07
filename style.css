@@ -9,9 +9,9 @@ window {
 .main-window {
     background: #0D0D0D;
     border: 1px solid #2A2A2A;
-    border-radius: 12px;
-    margin: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    margin: 0;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
 }
 
 /* Main page container */
@@ -108,20 +108,22 @@ entry text {
     border: 1px solid #5197EC;
     border-radius: 6px;
     color: #FFFFFF;
-    padding: 6px 12px;
+    padding: 4px 12px;
     font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    font-size: 13px;
-    min-width: 80px;
-    min-height: 28px;
+    font-weight: 400;
+    font-size: 12px;
+    min-width: 60px;
+    min-height: 24px;
 }
 
 .btn-primary:hover {
     background: #5197EC;
+    box-shadow: 0 2px 8px rgba(68, 144, 236, 0.3);
 }
 
 .btn-primary:active {
     background: #3A85D9;
+    transform: translateY(1px);
 }
 
 /* Secondary buttons */
@@ -130,20 +132,22 @@ entry text {
     border: 1px solid #2A2A2A;
     border-radius: 6px;
     color: #FFFFFF;
-    padding: 6px 12px;
+    padding: 4px 12px;
     font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    font-size: 13px;
-    min-width: 80px;
-    min-height: 28px;
+    font-weight: 400;
+    font-size: 12px;
+    min-width: 60px;
+    min-height: 24px;
 }
 
 .btn-secondary:hover {
     background: #2A2A2A;
+    border-color: #3A3A3A;
 }
 
 .btn-secondary:active {
     background: #1A1A1A;
+    transform: translateY(1px);
 }
 
 /* Disabled buttons */
@@ -162,7 +166,10 @@ entry text {
 
 /* Navigation buttons container */
 .nav-buttons {
-    margin: 20px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    margin: 0;
     padding: 0;
     border: none;
     background: transparent;
@@ -302,7 +309,6 @@ scrolledwindow {
 .p-24 { padding: 24px; }
 /* Language page specific styling */
 .language-main-container {
-    display: flex;
     min-height: 500px;
 }
 
@@ -310,30 +316,24 @@ scrolledwindow {
     background: transparent;
     padding: 20px;
     min-width: 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
 }
 
 .language-icon {
-    font-size: 48px;
-    margin-bottom: 20px;
+    font-size: 64px;
+    margin-bottom: 24px;
     color: #ffffff;
 }
 
 .language-title {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
-    font-size: 24px;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 28px;
+    color: rgba(255, 255, 255, 0.5);
     margin-bottom: 8px;
 }
 
 .language-right-panel {
-    flex: 1;
     padding: 20px 40px;
-    display: flex;
-    flex-direction: column;
 }
 
 .language-header {
@@ -343,23 +343,27 @@ scrolledwindow {
 .language-selection-container {
     background: #1A1A1A;
     border: 1px solid #2A2A2A;
-    border-radius: 8px;
-    overflow: hidden;
+    border-radius: 12px;
     min-height: 400px;
 }
 
 .language-list-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid #2A2A2A;
-    transition: background-color 0.2s ease;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(42, 42, 42, 0.5);
+    transition: all 0.2s ease;
+    border-radius: 8px;
+    margin: 4px 8px;
 }
 
 .language-list-item:hover {
     background: #2A2A2A;
+    border-color: #3A3A3A;
 }
 
 .language-list-item:selected {
-    background: #4490EC;
+    background: linear-gradient(135deg, #4490EC 0%, #5A9FED 100%);
+    border-color: #4490EC;
+    box-shadow: 0 4px 12px rgba(68, 144, 236, 0.3);
 }
 
 .language-list-item:last-child {

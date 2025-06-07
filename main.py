@@ -22,14 +22,12 @@ from pages.user_page import UserPage
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        # Window properties
+          # Window properties
         self.set_title("System Installer")
         self.set_default_size(1000, 700)
         self.set_resizable(False)
         
-        # Remove titlebar for clean look
-        self.set_titlebar(None)
+        # Remove titlebar for clean rounded look
         self.set_decorated(False)
         
         # Load custom CSS

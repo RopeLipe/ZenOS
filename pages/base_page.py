@@ -20,10 +20,9 @@ class BasePage(Gtk.Box):
         # Create overlay for absolute positioning
         self.overlay = Gtk.Overlay()
         self.append(self.overlay)
-        
-        # Navigation buttons area - positioned absolutely
+          # Navigation buttons area - positioned absolutely
         self.nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.nav_box.set_spacing(12)
+        self.nav_box.set_spacing(8)
         self.nav_box.set_halign(Gtk.Align.END)
         self.nav_box.set_valign(Gtk.Align.END)
         self.nav_box.add_css_class("nav-buttons")
