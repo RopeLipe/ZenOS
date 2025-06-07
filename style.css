@@ -319,9 +319,10 @@ scrolledwindow {
 }
 
 .language-icon {
-    margin-top: 20px;
-    min-width: 80px;
-    min-height: 80px;
+    margin-top: 150px;
+    margin-right: 150px;
+    min-width: 250px;
+    min-height: 250px;
     filter: brightness(0) invert(1);  /* Make icon white */
 }
 
@@ -331,12 +332,13 @@ scrolledwindow {
     font-size: 32px;
     color: rgba(255, 255, 255, 0.5);
     margin-bottom: 12px;
-    margin-top: 10px;
+    margin-top: -10px;
 }
 
 .language-right-panel {
-    padding: 40px 60px 120px 20px;
+    padding: 40px 60px 120px 40px;
     margin-left: auto;
+    margin-right: -100px;
     min-width: 420px;
     max-width: 520px;
 }

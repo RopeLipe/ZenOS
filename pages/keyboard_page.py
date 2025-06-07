@@ -123,7 +123,7 @@ class KeyboardPage(BasePage):
         
         # Select first by default
         self.lang_listbox.select_row(self.lang_listbox.get_row_at_index(0))
-          scrolled.set_child(self.lang_listbox)
+        scrolled.set_child(self.lang_listbox)
         return scrolled
     
     def create_layout_list(self):
