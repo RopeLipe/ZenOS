@@ -1,22 +1,32 @@
-"""
-Language Selec        # Left panel with title and icon
+import gi
+gi.re        # Left panel with icon and title
         left_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         left_panel.add_css_class("language-left-panel")
         
-        # Language title (above icon now)
+        # Language title
         title_label = Gtk.Label(label="Language")
         title_label.add_css_class("language-title")
         title_label.set_halign(Gtk.Align.START)
         left_panel.append(title_label)
         
-        # Language icon - Using proper language/globe icon
-        icon_label = Gtk.Label(label="🌐")
-        icon_label.add_css_class("language-icon")
-        left_panel.append(icon_label)"
-
-import gi
-gi.require_version('Gtk', '4.0')
-from gi.repository import Gtk
+        # Language icon - Load image instead of unicode
+        try:
+            # Get the path to the icon
+            icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assets", "Language-Icon.png")
+            
+            # Load and scale the image
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, 64, 64, True)
+            icon_image = Gtk.Image.new_from_pixbuf(pixbuf)
+            icon_image.add_css_class("language-icon")
+            left_panel.append(icon_image)
+        except Exception as e:
+            # Fallback to text if image loading fails
+            print(f"Could not load language icon: {e}")
+            icon_label = Gtk.Label(label="🌍")
+            icon_label.add_css_class("language-icon")
+            left_panel.append(icon_label)('Gtk', '4.0')
+from gi.repository import Gtk, GdkPixbuf
+import os
 from .base_page import BasePage
 
 class LanguagePage(BasePage):
@@ -46,11 +56,11 @@ class LanguagePage(BasePage):
         # Right panel with selection
         right_panel = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         right_panel.add_css_class("language-right-panel")
-        
-        # Header section
+          # Header section
         header_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         header_box.add_css_class("language-header")
-          # Subtitle
+        
+        # Subtitle
         subtitle_label = Gtk.Label(label="Select Language")
         subtitle_label.add_css_class("page-subtitle")
         subtitle_label.set_halign(Gtk.Align.END)
@@ -70,9 +80,9 @@ class LanguagePage(BasePage):
         
         main_container.append(left_panel)
         main_container.append(right_panel)
-        
         self.content_box.append(main_container)
-          # Setup navigation
+        
+        # Setup navigation
         self.back_btn.set_sensitive(False)  # First page, no back button
         self.continue_btn.connect("clicked", self.on_continue)
     
@@ -86,11 +96,11 @@ class LanguagePage(BasePage):
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scrolled.set_vexpand(True)
-        
-        # Create list box
+          # Create list box
         self.language_list = Gtk.ListBox()
         self.language_list.set_selection_mode(Gtk.SelectionMode.SINGLE)
-          # Language options without flag emojis
+        
+        # Language options without flag emojis
         languages = [
             ("English", "en"),
             ("Español", "es"),
