@@ -77,19 +77,21 @@ class InstallerWindow(Adw.ApplicationWindow):
         # Add pages to stack
         for name, page in self.pages.items():
             self.stack.add_named(page, name)
-    
-    def setup_header(self):
+      def setup_header(self):
         """Setup header bar"""
         self.header = Adw.HeaderBar()
         self.header.set_title_widget(Gtk.Label(label="System Installer"))
         self.header.add_css_class("installer-header")
-        self.set_titlebar(self.header)
-    
-    def setup_layout(self):
+        
+        # Create main content with header
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.main_box.append(self.header)
+        self.main_box.append(self.stack)
+        self.set_content(self.main_box)
+      def setup_layout(self):
         """Setup main layout"""
-        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        main_box.append(self.stack)
-        self.set_content(main_box)
+        # Layout is now handled in setup_header
+        pass
     
     def navigate_to(self, page_name):
         """Navigate to specified page"""

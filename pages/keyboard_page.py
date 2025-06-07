@@ -126,8 +126,7 @@ class KeyboardPage(BasePage):
         
         scrolled.set_child(self.lang_listbox)
         return scrolled
-        
-    def create_layout_list(self):
+          def create_layout_list(self):
         """Create layout list"""
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -137,10 +136,11 @@ class KeyboardPage(BasePage):
         self.layout_listbox = Gtk.ListBox()
         self.layout_listbox.set_selection_mode(Gtk.SelectionMode.SINGLE)
         
-        # Default layouts for US English
+        scrolled.set_child(self.layout_listbox)
+        
+        # Default layouts for US English - do this after setting up the listbox
         self.update_layouts("us")
         
-        scrolled.set_child(self.layout_listbox)
         return scrolled
         
     def create_test_entry(self):
