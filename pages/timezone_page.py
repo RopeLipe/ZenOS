@@ -6,13 +6,7 @@ import gi
 gi.require_version("Gtk", "4.0")
 from gi.repository import Gtk, GLib
 from .base_page import BasePage
-from utils.system_utils import get_a    def get_data(self) -> dict:
-        """Get the selected timezone."""
-        selected_index = self.tz_dropdown.get_selected()
-        if selected_index != Gtk.INVALID_LIST_POSITION and hasattr(self, 'timezones') and selected_index < len(self.timezones):
-            selected_timezone = self.timezones[selected_index]
-            return {"timezone": selected_timezone}
-        return {"timezone": ""}ones
+from utils.system_utils import get_all_timezones
 from datetime import datetime
 import subprocess
 try:
@@ -30,9 +24,12 @@ class TimezonePage(BasePage):
             "Time Zone", 
             "Select your time zone to ensure correct time settings."
         )
+          # Timezone selection with improved layout
+        tz_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         
-        # Timezone selection
+        # Left side - dropdown
         tz_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        tz_box.set_hexpand(True)
         
         tz_label = Gtk.Label(label="Time Zone:")
         tz_label.set_halign(Gtk.Align.START)
@@ -41,13 +38,28 @@ class TimezonePage(BasePage):
         # Create dropdown with search
         self.tz_dropdown = Gtk.DropDown()
         self.tz_dropdown.set_enable_search(True)
+        self.tz_dropdown.set_search_match_mode(Gtk.StringFilterMatchMode.SUBSTRING)
         self.tz_dropdown.connect("notify::selected", self._on_timezone_changed)
         
         # Load timezones
         self._load_timezones()
         
         tz_box.append(self.tz_dropdown)
-        self.content_box.append(tz_box)
+        tz_container.append(tz_box)
+        
+        # Right side - auto-detect button (smaller and better positioned)
+        detect_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        detect_container.set_valign(Gtk.Align.END)
+        
+        # Small auto-detect button
+        detect_button = Gtk.Button(label="Auto-Detect")
+        detect_button.connect("clicked", self._on_auto_detect)
+        detect_button.set_size_request(100, -1)
+        detect_button.add_css_class("modern-button")
+        detect_container.append(detect_button)
+        
+        tz_container.append(detect_container)
+        self.content_box.append(tz_container)
         
         # Current time display
         time_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -56,25 +68,15 @@ class TimezonePage(BasePage):
         time_label = Gtk.Label(label="Current time in selected timezone:")
         time_label.set_halign(Gtk.Align.START)
         time_box.append(time_label)
-        
-        self.time_display = Gtk.Label()
-        self.time_display.set_halign(Gtk.Align.START)        self.time_display.add_css_class("monospace")
+          self.time_display = Gtk.Label()
+        self.time_display.set_halign(Gtk.Align.START)
+        self.time_display.add_css_class("monospace")
         time_box.append(self.time_display)
         
         self.content_box.append(time_box)
-        
-        # Initialize time display
-        self._update_time_display()
-        
+          
         # Set up timer for live time updates
         GLib.timeout_add_seconds(1, self._update_time_display_timer)
-        
-        # Auto-detect button
-        detect_button = Gtk.Button(label="Auto-detect Time Zone")
-        detect_button.connect("clicked", self._on_auto_detect)
-        detect_button.set_halign(Gtk.Align.START)
-        detect_button.set_margin_top(12)
-        self.content_box.append(detect_button)
         
         # Additional info
         info_label = Gtk.Label()
@@ -90,6 +92,33 @@ class TimezonePage(BasePage):
         
         # Update time display initially
         self._update_time_display()
+        
+        # Interactive timezone map
+        map_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        map_box.set_margin_top(20)
+        
+        map_label = Gtk.Label(label="Or click on the map to select your timezone:")
+        map_label.set_halign(Gtk.Align.START)
+        map_box.append(map_label)
+        
+        # Create map canvas
+        map_frame = Gtk.Frame()
+        map_frame.add_css_class("card")
+        map_frame.set_size_request(800, 400)
+        
+        self.map_drawing_area = Gtk.DrawingArea()
+        self.map_drawing_area.set_draw_func(self._draw_world_map)
+        
+        # Add click handler for map
+        map_click = Gtk.GestureClick()
+        map_click.connect("pressed", self._on_map_clicked)
+        self.map_drawing_area.add_controller(map_click)
+        
+        map_frame.set_child(self.map_drawing_area)
+        map_box.append(map_frame)
+        
+        self.content_box.append(map_box)
+
       def _load_timezones(self):
         """Load available timezones into the dropdown."""
         self.timezones = get_all_timezones()
@@ -192,14 +221,12 @@ class TimezonePage(BasePage):
             
         except Exception as e:
             self.show_error(f"Auto-detection failed: {str(e)}")
-    
-    def get_data(self) -> dict:
+      def get_data(self) -> dict:
         """Get the selected timezone."""
         selected_index = self.tz_dropdown.get_selected()
-        if selected_index != Gtk.INVALID_LIST_POSITION:
-            model = self.tz_dropdown.get_model()
-            selected_tz = model.get_string(selected_index)
-            return {"timezone": selected_tz}
+        if selected_index != Gtk.INVALID_LIST_POSITION and hasattr(self, 'timezones') and selected_index < len(self.timezones):
+            selected_timezone = self.timezones[selected_index]
+            return {"timezone": selected_timezone}
         return {"timezone": ""}
     
     def validate(self) -> tuple[bool, str]:
@@ -208,3 +235,163 @@ class TimezonePage(BasePage):
         if not data.get("timezone"):
             return False, "Please select a time zone"
         return True, ""
+
+    def _draw_world_map(self, widget, cr, width, height):
+        """Draw a simple world map outline (placeholder for actual map)."""
+        cr.set_source_rgb(1, 1, 1)  # White background
+        cr.paint()
+        
+        cr.set_source_rgb(0, 0, 0)  # Black color for map outline
+        cr.set_line_width(0.5)
+        
+        # Draw continents (simplified)
+        continents = [
+            # Africa
+            [ (20, 150), (60, 180), (100, 150), (80, 100), (20, 150) ],
+            # Europe
+            [ (120, 80), (160, 50), (200, 80), (180, 120), (120, 80) ],
+            # Asia
+            [ (220, 50), (260, 20), (300, 50), (280, 90), (220, 50) ],
+            # North America
+            [ (20, 10), (60, -20), (100, 10), (80, 50), (20, 10) ],
+            # South America
+            [ (120, 100), (160, 70), (200, 100), (180, 140), (120, 100) ],
+            # Australia
+            [ (220, 150), (260, 120), (300, 150), (280, 190), (220, 150) ]
+        ]
+        
+        for continent in continents:
+            cr.move_to(*continent[0])
+            for point in continent[1:]:
+                cr.line_to(*point)
+            cr.close_path()
+        
+        cr.stroke()
+        
+        # Draw timezone lines (simplified)
+        cr.set_line_width(0.2)
+        for x in range(0, width, 20):
+            cr.move_to(x, 0)
+            cr.line_to(x, height)
+        for y in range(0, height, 20):
+            cr.move_to(0, y)
+            cr.line_to(width, y)
+        
+        cr.stroke()
+        
+        # Draw selected timezone region (if any)
+        try:
+            selected_tz = self.get_data().get("timezone", "UTC")
+            if selected_tz and hasattr(self, 'timezones'):
+                index = self.timezones.index(selected_tz)
+                if index != -1:
+                    # Highlight the region for the selected timezone
+                    cr.set_source_rgba(1, 0, 0, 0.5)  # Red with transparency
+                    cr.set_line_width(0)
+                    
+                    # Draw a simple circle around the approximate region
+                    cr.arc(width / 2, height / 2, 70, 0, 2 * 3.1416)
+                    cr.fill()
+        except:
+            pass
+
+    def _draw_world_map(self, area, cr, width, height, user_data):
+        """Draw a simplified world map with timezone regions."""
+        import math
+        
+        # Clear background
+        cr.set_source_rgb(0.95, 0.95, 0.95)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+        
+        # Define timezone regions as rectangles (simplified)
+        # Format: (x, y, width, height, timezone, color)
+        self.timezone_regions = [
+            # Americas
+            (50, 150, 80, 120, "America/New_York", (0.8, 0.9, 1.0)),
+            (130, 140, 60, 130, "America/Chicago", (0.7, 0.8, 0.9)),
+            (190, 130, 70, 140, "America/Denver", (0.6, 0.7, 0.8)),
+            (260, 120, 80, 150, "America/Los_Angeles", (0.5, 0.6, 0.7)),
+            
+            # Europe/Africa
+            (400, 100, 60, 100, "Europe/London", (1.0, 0.9, 0.8)),
+            (460, 90, 50, 110, "Europe/Paris", (0.9, 0.8, 0.7)),
+            (510, 85, 45, 115, "Europe/Berlin", (0.8, 0.7, 0.6)),
+            (420, 200, 80, 120, "Africa/Cairo", (0.7, 0.8, 0.9)),
+            
+            # Asia/Oceania
+            (570, 80, 50, 100, "Asia/Moscow", (0.9, 0.7, 0.8)),
+            (620, 90, 60, 90, "Asia/Dubai", (0.8, 0.6, 0.7)),
+            (680, 100, 70, 80, "Asia/Kolkata", (0.7, 0.5, 0.6)),
+            (750, 80, 60, 100, "Asia/Shanghai", (0.6, 0.4, 0.5)),
+            (810, 90, 50, 90, "Asia/Tokyo", (0.5, 0.3, 0.4)),
+            (780, 220, 70, 80, "Australia/Sydney", (0.4, 0.2, 0.3)),
+        ]
+        
+        # Draw regions
+        for x, y, w, h, tz, color in self.timezone_regions:
+            # Scale to fit canvas
+            scale_x = width / 900
+            scale_y = height / 400
+            
+            rx = x * scale_x
+            ry = y * scale_y
+            rw = w * scale_x
+            rh = h * scale_y
+            
+            # Draw region
+            cr.set_source_rgb(*color)
+            cr.rectangle(rx, ry, rw, rh)
+            cr.fill()
+            
+            # Draw border
+            cr.set_source_rgb(0.3, 0.3, 0.3)
+            cr.set_line_width(1)
+            cr.rectangle(rx, ry, rw, rh)
+            cr.stroke()
+            
+            # Draw timezone label
+            cr.set_source_rgb(0, 0, 0)
+            cr.select_font_face("Sans", 0, 0)
+            cr.set_font_size(10)
+            
+            # Extract city name from timezone
+            city = tz.split('/')[-1].replace('_', ' ')
+            text_extents = cr.text_extents(city)
+            text_x = rx + (rw - text_extents.width) / 2
+            text_y = ry + (rh + text_extents.height) / 2
+            
+            cr.move_to(text_x, text_y)
+            cr.show_text(city)
+    
+    def _on_map_clicked(self, gesture, n_press, x, y):
+        """Handle clicks on the timezone map."""
+        if not hasattr(self, 'timezone_regions'):
+            return
+        
+        # Get canvas dimensions
+        width = self.map_drawing_area.get_width()
+        height = self.map_drawing_area.get_height()
+        
+        # Check which region was clicked
+        for rx, ry, rw, rh, tz, color in self.timezone_regions:
+            # Scale coordinates
+            scale_x = width / 900
+            scale_y = height / 400
+            
+            region_x = rx * scale_x
+            region_y = ry * scale_y
+            region_w = rw * scale_x
+            region_h = rh * scale_y
+            
+            # Check if click is within region
+            if (region_x <= x <= region_x + region_w and 
+                region_y <= y <= region_y + region_h):
+                
+                # Find timezone in dropdown and select it
+                if hasattr(self, 'timezones') and tz in self.timezones:
+                    index = self.timezones.index(tz)
+                    self.tz_dropdown.set_selected(index)
+                    break
+
+        # ...existing code...

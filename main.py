@@ -104,8 +104,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             # Don't show error dialog here to avoid recursion
             print(f"Error checking prerequisites: {e}")
             return False
-    
-    def _setup_ui(self):
+      def _setup_ui(self):
         """Set up the main UI layout."""
         # Main container
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
@@ -119,43 +118,107 @@ class InstallerWindow(Gtk.ApplicationWindow):
         # Add CSS classes for styling
         self.add_css_class("installer-window")
         
-        # Content area with stack
+        # Step indicator at the top
+        self._setup_step_indicator(main_box)
+        
+        # Content area with stack and icons
+        content_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        content_container.set_hexpand(True)
+        content_container.set_vexpand(True)
+        content_container.set_margin_start(20)
+        content_container.set_margin_end(20)
+        content_container.set_margin_top(10)
+        content_container.set_margin_bottom(10)
+        
+        # Stack for pages
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(300)
-        main_box.append(self.stack)
+        self.stack.set_hexpand(True)
+        self.stack.set_vexpand(True)
+        content_container.append(self.stack)
         
-        # Navigation bar
-        nav_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        nav_box.set_margin_top(12)
-        nav_box.set_margin_bottom(12)
-        nav_box.set_margin_start(20)
-        nav_box.set_margin_end(20)
-        nav_box.set_spacing(12)
+        # Right side icon area
+        self.page_icon = Gtk.Image()
+        self.page_icon.set_icon_size(Gtk.IconSize.LARGE)
+        self.page_icon.set_pixel_size(128)
+        self.page_icon.set_valign(Gtk.Align.CENTER)
+        self.page_icon.set_halign(Gtk.Align.CENTER)
+        self.page_icon.set_margin_start(40)
+        self.page_icon.add_css_class("page-icon")
+        content_container.append(self.page_icon)
         
-        # Back button
-        self.back_button = Gtk.Button(label="← Back")
+        main_box.append(content_container)
+        
+        # Circular navigation buttons - bottom right
+        nav_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        nav_container.set_halign(Gtk.Align.END)
+        nav_container.set_margin_end(30)
+        nav_container.set_margin_bottom(30)
+        nav_container.set_spacing(15)
+        
+        # Back button - circular
+        self.back_button = Gtk.Button()
+        self.back_button.set_icon_name("go-previous-symbolic")
         self.back_button.connect("clicked", self._on_back_clicked)
-        self.back_button.add_css_class("suggested-action")
-        nav_box.append(self.back_button)
+        self.back_button.add_css_class("circular-nav-button")
+        self.back_button.set_size_request(50, 50)
+        nav_container.append(self.back_button)
         
-        # Spacer
-        spacer = Gtk.Label()
-        spacer.set_hexpand(True)
-        nav_box.append(spacer)
-        
-        # Page indicator
-        self.page_indicator = Gtk.Label()
-        self.page_indicator.add_css_class("dim-label")
-        nav_box.append(self.page_indicator)
-        
-        # Next/Install button
-        self.next_button = Gtk.Button(label="Next →")
+        # Next button - circular
+        self.next_button = Gtk.Button()
+        self.next_button.set_icon_name("go-next-symbolic")
         self.next_button.connect("clicked", self._on_next_clicked)
+        self.next_button.add_css_class("circular-nav-button")
         self.next_button.add_css_class("suggested-action")
-        nav_box.append(self.next_button)
+        self.next_button.set_size_request(50, 50)
+        nav_container.append(self.next_button)
         
-        main_box.append(nav_box)
+        main_box.append(nav_container)
+    
+    def _setup_step_indicator(self, parent_box):
+        """Set up the animated step indicator at the top."""
+        step_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        step_container.set_halign(Gtk.Align.CENTER)
+        step_container.set_margin_top(20)
+        step_container.set_margin_bottom(20)
+        step_container.set_spacing(40)
+        step_container.add_css_class("step-indicator")
+        
+        self.step_circles = []
+        self.step_labels = []
+        step_names = ["Language", "Keyboard", "Timezone", "Storage", "Network", "User"]
+        
+        for i, step_name in enumerate(step_names):
+            step_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+            step_box.set_halign(Gtk.Align.CENTER)
+            
+            # Step circle
+            circle = Gtk.Label(label=str(i + 1))
+            circle.set_size_request(40, 40)
+            circle.add_css_class("step-circle")
+            circle.add_css_class("step-inactive")
+            self.step_circles.append(circle)
+            step_box.append(circle)
+            
+            # Step label
+            label = Gtk.Label(label=step_name)
+            label.add_css_class("step-label")
+            label.add_css_class("step-inactive")
+            self.step_labels.append(label)
+            step_box.append(label)
+            
+            step_container.append(step_box)
+            
+            # Add connecting line (except for last step)
+            if i < len(step_names) - 1:
+                line = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+                line.set_size_request(30, 2)
+                line.set_valign(Gtk.Align.CENTER)
+                line.add_css_class("step-connector")
+                step_container.append(line)
+        
+        parent_box.append(step_container)
     
     def _setup_pages(self):
         """Initialize all installer pages."""
@@ -184,22 +247,61 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.current_page_index = 0
         self.total_pages = len(self.pages)
         self.installation_data = {}
-    
-    def _update_navigation(self):
-        """Update navigation button states and labels."""
+      def _update_navigation(self):
+        """Update navigation button states and step indicators."""
         # Update back button
         self.back_button.set_sensitive(self.current_page_index > 0)
         
-        # Update page indicator
-        current = self.current_page_index + 1
-        total = self.total_pages
-        self.page_indicator.set_text(f"Step {current} of {total}")
-        
-        # Update next button
+        # Update next button icon
         if self.current_page_index < self.total_pages - 1:
-            self.next_button.set_label("Next →")
+            self.next_button.set_icon_name("go-next-symbolic")
         else:
-            self.next_button.set_label("Review & Install")
+            self.next_button.set_icon_name("system-run-symbolic")
+        
+        # Update step indicators
+        self._update_step_indicators()
+        
+        # Update page icon
+        self._update_page_icon()
+    
+    def _update_step_indicators(self):
+        """Update the step indicator circles and labels."""
+        for i, (circle, label) in enumerate(zip(self.step_circles, self.step_labels)):
+            # Remove existing state classes
+            circle.remove_css_class("step-active")
+            circle.remove_css_class("step-completed")
+            circle.remove_css_class("step-inactive")
+            label.remove_css_class("step-active")
+            label.remove_css_class("step-completed")
+            label.remove_css_class("step-inactive")
+            
+            # Add appropriate state class
+            if i < self.current_page_index:
+                circle.add_css_class("step-completed")
+                label.add_css_class("step-completed")
+                circle.set_text("✓")
+            elif i == self.current_page_index:
+                circle.add_css_class("step-active")
+                label.add_css_class("step-active")
+                circle.set_text(str(i + 1))
+            else:
+                circle.add_css_class("step-inactive")
+                label.add_css_class("step-inactive")
+                circle.set_text(str(i + 1))
+    
+    def _update_page_icon(self):
+        """Update the large page icon on the right side."""
+        page_icons = [
+            "preferences-desktop-locale-symbolic",  # Language
+            "input-keyboard-symbolic",              # Keyboard
+            "preferences-system-time-symbolic",     # Timezone
+            "drive-harddisk-symbolic",             # Storage
+            "network-wireless-symbolic",           # Network
+            "system-users-symbolic"                # User
+        ]
+        
+        if 0 <= self.current_page_index < len(page_icons):
+            self.page_icon.set_from_icon_name(page_icons[self.current_page_index])
     
     def _show_current_page(self):
         """Show the current page and call its enter handler."""
@@ -234,8 +336,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             self._show_current_page()
         else:
             self._show_confirmation()
-    
-    def _show_confirmation(self):
+      def _show_confirmation(self):
         """Show the installation confirmation page."""
         # Update confirmation page with collected data
         self.confirmation_page.update_summary(self.installation_data)
@@ -243,9 +344,14 @@ class InstallerWindow(Gtk.ApplicationWindow):
         
         # Update navigation for confirmation
         self.back_button.set_sensitive(True)
-        self.back_button.set_label("← Back to User Setup")
-        self.next_button.set_label("Start Installation")
-        self.page_indicator.set_text("Review & Confirm")
+        self.next_button.set_icon_name("system-run-symbolic")
+        
+        # Hide step indicators during confirmation
+        for circle, label in zip(self.step_circles, self.step_labels):
+            circle.get_parent().set_visible(False)
+        
+        # Show confirmation icon
+        self.page_icon.set_from_icon_name("dialog-question-symbolic")
         
         # Connect to final install
         try:
@@ -262,12 +368,13 @@ class InstallerWindow(Gtk.ApplicationWindow):
             error_msg = "Please fix the following issues:\n\n" + "\n".join(f"• {error}" for error in errors)
             self._show_error_dialog("Validation Error", error_msg)
             return
-        
-        # Show loading page
+          # Show loading page
         self.stack.set_visible_child_name("loading")
         self.back_button.set_sensitive(False)
         self.next_button.set_sensitive(False)
-        self.page_indicator.set_text("Installing...")
+        
+        # Show installation icon
+        self.page_icon.set_from_icon_name("system-software-install-symbolic")
         
         # Start installation
         self._start_installation()
@@ -297,12 +404,12 @@ class InstallerWindow(Gtk.ApplicationWindow):
                 installation_complete(success)
             except Exception as e:
                 self.logger.error(f"Installation failed: {e}")
-                installation_complete(False)
-        
+                installation_complete(False)        
         thread = threading.Thread(target=install_thread)
         thread.daemon = True
         thread.start()
-        def _show_success_dialog(self):
+    
+    def _show_success_dialog(self):
             """Show installation success dialog."""
             dialog = Gtk.MessageDialog(
                 transient_for=self,
@@ -313,11 +420,11 @@ class InstallerWindow(Gtk.ApplicationWindow):
             )
             dialog.set_property("secondary-text", 
                 "The system has been installed successfully. "
-                "The computer will restart automatically."
-            )
+                "The computer will restart automatically."            )
             dialog.connect("response", self._on_success_response)
             dialog.present()
-        def _show_installation_error(self):
+    
+    def _show_installation_error(self):
             """Show installation error dialog."""
             dialog = Gtk.MessageDialog(
                 transient_for=self,
@@ -328,8 +435,7 @@ class InstallerWindow(Gtk.ApplicationWindow):
             )
             dialog.set_property("secondary-text",
                 "The installation could not be completed. "
-                "Please check the log file for details and try again."
-            )
+                "Please check the log file for details and try again."            )
             dialog.connect("response", lambda d, r: d.destroy())
             dialog.present()
         
@@ -338,10 +444,10 @@ class InstallerWindow(Gtk.ApplicationWindow):
         self.next_button.set_sensitive(True)
     
     def _on_success_response(self, dialog, response):
-        """Handle success dialog response."""
-        dialog.destroy()
+        """Handle success dialog response."""        dialog.destroy()
         
-        # Trigger reboot (in a real installer)        import subprocess
+        # Trigger reboot (in a real installer)
+        import subprocess
         try:
             subprocess.run(["reboot"], check=False)
         except:

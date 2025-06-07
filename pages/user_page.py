@@ -52,11 +52,15 @@ class UserPage(BasePage):
         self.fullname_entry.set_placeholder_text("Enter full name (optional)")
         self.fullname_entry.set_hexpand(True)
         grid.attach(self.fullname_entry, 1, 1, 1, 1)
-        
-        # Password
+          # Password
         password_label = Gtk.Label(label="Password:")
         password_label.set_halign(Gtk.Align.END)
         grid.attach(password_label, 0, 2, 1, 1)
+        
+        # Password field with eye toggle
+        password_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        password_box.set_hexpand(True)
+        password_box.add_css_class("linked")
         
         self.password_entry = Gtk.Entry()
         self.password_entry.set_placeholder_text("Enter password")
@@ -64,17 +68,30 @@ class UserPage(BasePage):
         self.password_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
         self.password_entry.set_hexpand(True)
         self.password_entry.connect("changed", self._on_password_changed)
-        grid.attach(self.password_entry, 1, 2, 1, 1)
+        password_box.append(self.password_entry)
+        
+        self.password_toggle = Gtk.Button()
+        self.password_toggle.set_icon_name("view-conceal-symbolic")
+        self.password_toggle.set_tooltip_text("Show/hide password")
+        self.password_toggle.add_css_class("flat")
+        self.password_toggle.connect("clicked", self._on_password_toggle)
+        password_box.append(self.password_toggle)
+        
+        grid.attach(password_box, 1, 2, 1, 1)
         
         self.password_status = Gtk.Label()
         self.password_status.set_halign(Gtk.Align.START)
         self.password_status.set_visible(False)
         grid.attach(self.password_status, 2, 2, 1, 1)
-        
-        # Confirm password
+          # Confirm password
         confirm_label = Gtk.Label(label="Confirm Password:")
         confirm_label.set_halign(Gtk.Align.END)
         grid.attach(confirm_label, 0, 3, 1, 1)
+        
+        # Confirm password field with eye toggle
+        confirm_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        confirm_box.set_hexpand(True)
+        confirm_box.add_css_class("linked")
         
         self.confirm_entry = Gtk.Entry()
         self.confirm_entry.set_placeholder_text("Confirm password")
@@ -82,7 +99,16 @@ class UserPage(BasePage):
         self.confirm_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
         self.confirm_entry.set_hexpand(True)
         self.confirm_entry.connect("changed", self._on_confirm_changed)
-        grid.attach(self.confirm_entry, 1, 3, 1, 1)
+        confirm_box.append(self.confirm_entry)
+        
+        self.confirm_toggle = Gtk.Button()
+        self.confirm_toggle.set_icon_name("view-conceal-symbolic")
+        self.confirm_toggle.set_tooltip_text("Show/hide password")
+        self.confirm_toggle.add_css_class("flat")
+        self.confirm_toggle.connect("clicked", self._on_confirm_toggle)
+        confirm_box.append(self.confirm_toggle)
+        
+        grid.attach(confirm_box, 1, 3, 1, 1)
         
         self.confirm_status = Gtk.Label()
         self.confirm_status.set_halign(Gtk.Align.START)
@@ -104,19 +130,7 @@ class UserPage(BasePage):
         self.hostname_status.set_halign(Gtk.Align.START)
         self.hostname_status.set_visible(False)
         grid.attach(self.hostname_status, 2, 4, 1, 1)
-        
-        self.content_box.append(grid)
-        
-        # Show password toggle
-        password_options = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        password_options.set_halign(Gtk.Align.CENTER)
-        password_options.set_margin_top(16)
-        
-        show_password = Gtk.CheckButton(label="Show passwords")
-        show_password.connect("toggled", self._on_show_password_toggled)
-        password_options.append(show_password)
-        
-        self.content_box.append(password_options)
+          self.content_box.append(grid)
         
         # Additional options
         options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
@@ -145,8 +159,7 @@ class UserPage(BasePage):
         info_label.add_css_class("dim-label")
         info_label.set_margin_top(16)
         self.content_box.append(info_label)
-    
-    def _on_username_changed(self, entry):
+      def _on_username_changed(self, entry):
         """Validate username as user types."""
         username = entry.get_text()
         if username:
@@ -156,9 +169,11 @@ class UserPage(BasePage):
                 self.username_status.add_css_class("success")
                 self.username_status.remove_css_class("error")
                 
-                # Auto-fill hostname if empty
-                if not self.hostname_entry.get_text():
-                    self.hostname_entry.set_text(f"{username}-computer")
+                # Auto-update hostname in real-time if it's still default or empty
+                current_hostname = self.hostname_entry.get_text()
+                if not current_hostname or current_hostname.endswith("-computer"):
+                    suggested_hostname = f"{username}-computer"
+                    self.hostname_entry.set_text(suggested_hostname)
             else:
                 self.username_status.set_text("✗")
                 self.username_status.add_css_class("error")
@@ -225,12 +240,37 @@ class UserPage(BasePage):
             self.hostname_status.set_visible(True)
         else:
             self.hostname_status.set_visible(False)
-    
-    def _on_show_password_toggled(self, checkbox):
+      def _on_show_password_toggled(self, checkbox):
         """Toggle password visibility."""
         visible = checkbox.get_active()
         self.password_entry.set_visibility(visible)
         self.confirm_entry.set_visibility(visible)
+    
+    def _on_password_toggle(self, button):
+        """Toggle password visibility for main password field."""
+        visible = not self.password_entry.get_visibility()
+        self.password_entry.set_visibility(visible)
+        
+        # Update icon
+        if visible:
+            button.set_icon_name("view-reveal-symbolic")
+            button.set_tooltip_text("Hide password")
+        else:
+            button.set_icon_name("view-conceal-symbolic")
+            button.set_tooltip_text("Show password")
+    
+    def _on_confirm_toggle(self, button):
+        """Toggle password visibility for confirm password field."""
+        visible = not self.confirm_entry.get_visibility()
+        self.confirm_entry.set_visibility(visible)
+        
+        # Update icon
+        if visible:
+            button.set_icon_name("view-reveal-symbolic")
+            button.set_tooltip_text("Hide password")
+        else:
+            button.set_icon_name("view-conceal-symbolic")
+            button.set_tooltip_text("Show password")
     
     def get_data(self) -> dict:
         """Get user account data."""

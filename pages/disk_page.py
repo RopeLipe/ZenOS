@@ -33,22 +33,30 @@ class DiskPage(BasePage):
         warning_box.append(warning_label)
         
         self.content_box.append(warning_box)
-        
-        # Disk selection
+          # Disk selection with modern header
         disk_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
+        
+        # Header with title and refresh button
+        header_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         
         disk_label = Gtk.Label(label="Available Disks:")
         disk_label.set_halign(Gtk.Align.START)
-        disk_box.append(disk_label)
+        disk_label.set_hexpand(True)
+        header_box.append(disk_label)
+        
+        # Modern refresh button with icon
+        refresh_button = Gtk.Button()
+        refresh_button.set_icon_name("view-refresh-symbolic")
+        refresh_button.connect("clicked", self._on_refresh_disks)
+        refresh_button.add_css_class("refresh-button")
+        refresh_button.set_tooltip_text("Refresh disk list")
+        header_box.append(refresh_button)
+        
+        disk_box.append(header_box)
+        
         
         # Container for disk list
         self.disk_list_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
-        
-        # Refresh button
-        refresh_button = Gtk.Button(label="Refresh Disk List")
-        refresh_button.connect("clicked", self._on_refresh_disks)
-        refresh_button.set_halign(Gtk.Align.START)
-        disk_box.append(refresh_button)
         
         # Scrolled window for disk list
         scrolled = Gtk.ScrolledWindow()
@@ -102,53 +110,82 @@ class DiskPage(BasePage):
             no_disks_label.set_halign(Gtk.Align.START)
             self.disk_list_box.append(no_disks_label)
             return
-        
-        # Create radio buttons for disk selection
+          # Create radio buttons for disk selection with modern card styling
         group_button = None
         for disk in disks:
+            # Create card container
+            card_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
+            card_box.add_css_class("card")
+            card_box.set_margin_top(4)
+            card_box.set_margin_bottom(4)
+            
+            # Radio button
             disk_button = Gtk.CheckButton()
             if group_button is None:
                 group_button = disk_button
             else:
                 disk_button.set_group(group_button)
             
-            # Create disk info display
-            disk_info_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-            
             disk_button.connect("toggled", self._on_disk_selected, disk)
-            disk_info_box.append(disk_button)
+            disk_button.set_valign(Gtk.Align.CENTER)
+            card_box.append(disk_button)
             
-            # Disk icon
-            disk_icon = Gtk.Image.new_from_icon_name("drive-harddisk")
+            # Modern disk icon with better styling
+            disk_icon = Gtk.Image.new_from_icon_name("drive-harddisk-system-symbolic")
             disk_icon.set_icon_size(Gtk.IconSize.LARGE)
-            disk_info_box.append(disk_icon)
+            disk_icon.set_pixel_size(48)
+            disk_icon.add_css_class("disk-icon")
+            disk_icon.set_valign(Gtk.Align.CENTER)
+            card_box.append(disk_icon)
             
-            # Disk details
+            # Disk details with improved layout
             details_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
+            details_box.set_hexpand(True)
+            details_box.set_valign(Gtk.Align.CENTER)
             
+            # Disk name with larger, bold text
             name_label = Gtk.Label()
-            name_label.set_markup(f"<b>{disk['name']}</b>")
+            name_label.set_markup(f"<span size='large' weight='bold'>{disk['name']}</span>")
             name_label.set_halign(Gtk.Align.START)
             details_box.append(name_label)
             
-            info_text = f"Size: {disk['size']}"
+            # Disk info with better formatting
+            info_text = f"<span color='#666666'>Size: {disk['size']}"
             if disk['model'] != 'Unknown':
-                info_text += f" | Model: {disk['model']}"
+                info_text += f" • Model: {disk['model']}"
+            info_text += "</span>"
             
-            info_label = Gtk.Label(label=info_text)
+            info_label = Gtk.Label()
+            info_label.set_markup(info_text)
             info_label.set_halign(Gtk.Align.START)
-            info_label.add_css_class("dim-label")
             details_box.append(info_label)
             
-            disk_info_box.append(details_box)
+            card_box.append(details_box)
             
-            # Make the whole box clickable
+            # Make the whole card clickable
             clickable = Gtk.Button()
-            clickable.set_child(disk_info_box)
+            clickable.set_child(card_box)
             clickable.add_css_class("flat")
             clickable.connect("clicked", lambda btn, db=disk_button: db.set_active(True))
             
+            # Store reference for selection styling
+            clickable.connect("clicked", lambda btn, cb=card_box: self._update_disk_selection_styling(cb))
+            
             self.disk_list_box.append(clickable)
+    
+    def _update_disk_selection_styling(self, selected_card):
+        """Update card styling to show selection."""
+        # Remove selection styling from all cards
+        child = self.disk_list_box.get_first_child()
+        while child:
+            if hasattr(child, 'get_child'):
+                card = child.get_child()
+                if card:
+                    card.remove_css_class("selected")
+            child = child.get_next_sibling()
+        
+        # Add selection styling to selected card
+        selected_card.add_css_class("selected")
     
     def _on_refresh_disks(self, button):
         """Refresh the disk list."""

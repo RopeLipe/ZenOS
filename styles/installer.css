@@ -3,11 +3,112 @@
     background-color: @theme_bg_color;
 }
 
+/* Step Indicator Styling */
+.step-indicator {
+    background-color: @theme_base_color;
+    border-radius: 12px;
+    padding: 15px 30px;
+}
+
+.step-circle {
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+    color: @theme_fg_color;
+    background-color: @theme_base_color;
+    border: 2px solid @theme_selected_bg_color;
+}
+
+.step-circle.step-active {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+    border-color: @accent_color;
+}
+
+.step-circle.step-completed {
+    background-color: @success_color;
+    color: white;
+    border-color: @success_color;
+    font-size: 16px;
+}
+
+.step-circle.step-inactive {
+    opacity: 0.6;
+}
+
+.step-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.step-label.step-active {
+    font-weight: bold;
+    color: @accent_color;
+}
+
+.step-label.step-completed {
+    color: @success_color;
+}
+
+.step-label.step-inactive {
+    opacity: 0.6;
+}
+
+.step-connector {
+    background-color: @theme_selected_bg_color;
+    opacity: 0.5;
+}
+
+/* Circular Navigation Buttons */
+.circular-nav-button {
+    border-radius: 25px;
+    min-width: 50px;
+    min-height: 50px;
+    font-size: 18px;
+    border: 2px solid @theme_selected_bg_color;
+    background-color: @theme_base_color;
+}
+
+.circular-nav-button:hover {
+    background-color: @theme_selected_bg_color;
+}
+
+.circular-nav-button.suggested-action {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+    border-color: @accent_color;
+}
+
+/* Page Icon Styling */
+.page-icon {
+    opacity: 0.6;
+}
+
+/* Card-style components */
+.card {
+    background-color: @theme_base_color;
+    border-radius: 12px;
+    border: 1px solid @theme_selected_bg_color;
+    padding: 16px;
+    margin: 8px 0;
+}
+
+.card:hover {
+    background-color: @theme_selected_bg_color;
+}
+
+.card.selected {
+    border-color: @accent_color;
+    background-color: @accent_color;
+    color: @accent_fg_color;
+}
+
+/* Enhanced warning styling */
 .warning {
-    background-color: alpha(@warning_color, 0.1);
+    background-color: @warning_bg_color;
     border: 1px solid @warning_color;
-    border-radius: 6px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 16px;
 }
 
 .error {
@@ -40,7 +141,7 @@
     margin-bottom: 20px;
 }
 
-/* Form styling */
+/* Form styling with modern inputs */
 .form-grid {
     margin: 20px 0;
 }
@@ -49,10 +150,33 @@
     font-weight: 500;
 }
 
+/* Enhanced dropdown styling */
+.dropdown-enhanced {
+    border-radius: 8px;
+    padding: 8px 12px;
+    border: 2px solid @theme_selected_bg_color;
+    background-color: @theme_base_color;
+}
+
+.dropdown-enhanced:focus {
+    border-color: @accent_color;
+}
+
 /* Button styling */
 .navigation-button {
     min-width: 100px;
     padding: 8px 16px;
+}
+
+.icon-button {
+    border-radius: 8px;
+    padding: 8px;
+    background-color: @theme_base_color;
+    border: 1px solid @theme_selected_bg_color;
+}
+
+.icon-button:hover {
+    background-color: @theme_selected_bg_color;
 }
 
 /* Progress styling */
@@ -79,36 +203,53 @@
     color: @error_color;
 }
 
-/* Disk selection styling */
+/* Enhanced disk selection styling */
 .disk-item {
-    padding: 12px;
-    border-radius: 6px;
-    margin: 4px 0;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 8px 0;
+    background-color: @theme_base_color;
+    border: 2px solid @theme_selected_bg_color;
 }
 
 .disk-item:hover {
-    background-color: alpha(@theme_selected_bg_color, 0.1);
+    background-color: @theme_selected_bg_color;
 }
 
 .disk-item.selected {
-    background-color: alpha(@theme_selected_bg_color, 0.2);
-    border: 2px solid @theme_selected_bg_color;
+    background-color: @accent_color;
+    color: @accent_fg_color;
+    border-color: @accent_color;
+}
+
+.disk-icon {
+    font-size: 32px;
+    margin-right: 12px;
 }
 
 /* Network list styling */
 .network-item {
     padding: 8px 12px;
-    border-radius: 4px;
+    border-radius: 6px;
+    margin: 2px 0;
+    background-color: @theme_base_color;
+    border: 1px solid @theme_selected_bg_color;
 }
 
 .network-item:hover {
-    background-color: alpha(@theme_selected_bg_color, 0.1);
+    background-color: rgba(52, 152, 219, 0.1);
 }
+
+/* Signal strength indicators */
+.signal-excellent { color: #4caf50; }
+.signal-good { color: #8bc34a; }
+.signal-ok { color: #ff9800; }
+.signal-weak { color: #f44336; }
 
 /* Confirmation page styling */
 .summary-item {
-    padding: 8px 0;
-    border-bottom: 1px solid alpha(@theme_fg_color, 0.1);
+    padding: 12px 0;
+    border-bottom: 1px solid @theme_selected_bg_color;
 }
 
 .summary-label {
@@ -118,5 +259,118 @@
 
 .summary-value {
     opacity: 0.9;
+}
+
+/* Interactive elements */
+.keyboard-preview {
+    background-color: @theme_base_color;
+    border: 1px solid @theme_selected_bg_color;
+    border-radius: 8px;
+    padding: 20px;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.timezone-map {
+    border: 1px solid alpha(@borders, 0.2);
+    border-radius: 12px;
+    background: white;
+}
+
+.timezone-region {
+    transition: all 200ms ease;
+}
+
+.timezone-region:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+}
+
+/* Password visibility toggle */
+.password-toggle {
+    padding: 4px;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    opacity: 0.7;
+}
+
+.password-toggle:hover {
+    opacity: 1;
+    background-color: @theme_selected_bg_color;
+}
+
+/* Password field with eye toggle styling */
+.linked > entry {
+    border-radius: 8px 0 0 8px;
+}
+
+.linked > button {
+    border-radius: 0 8px 8px 0;
+    border-left: none;
+}
+
+/* Skip button styling */
+button.pill {
+    border-radius: 20px;
+    padding: 8px 16px;
+    background: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+button.pill:hover {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+/* Special styling for modern look */
+.modern-entry {
+    border-radius: 8px;
+    padding: 12px;
+    border: 2px solid @theme_selected_bg_color;
+    background-color: @theme_base_color;
+}
+
+.modern-entry:focus {
+    border-color: @accent_color;
+}
+
+.modern-button {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+
+.refresh-button {
+    border-radius: 50%;
+    padding: 8px;
+    background-color: @theme_base_color;
+    border: 1px solid @theme_selected_bg_color;
+}
+
+.refresh-button:hover {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+}
+
+/* Interactive Keyboard Styling */
+.keyboard-key {
+    font-family: monospace;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 4px;
+    background-color: @theme_base_color;
+    border: 1px solid @theme_selected_bg_color;
+    color: @theme_fg_color;
+}
+
+.keyboard-key:hover {
+    background-color: @theme_selected_bg_color;
+}
+
+.keyboard-key-pressed {
+    background-color: @accent_color;
+    color: @accent_fg_color;
+    border-color: @accent_color;
 }
 
