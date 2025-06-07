@@ -34,6 +34,7 @@ class InstallerWindow(Adw.ApplicationWindow):
         self.set_title("System Installer")
         self.set_default_size(1024, 720) # Increased window size
         self.set_resizable(False)
+        self.set_position(Gtk.WindowPosition.CENTER) # Center the window on screen
         
         # Remove titlebar for clean rounded look
         self.set_decorated(False)
