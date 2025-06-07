@@ -401,7 +401,7 @@ scrolledwindow {
 .welcome-page-title-top-left {
     font-family: 'Inter', sans-serif;
     font-weight: 500;
-    font-size: 20px;
+    font-size: 32px; /* Increased from 20px to match language-title */
     color: rgba(255, 255, 255, 0.5); /* Light grey */
     margin-bottom: 20px; /* Space below this title */
 }
@@ -427,17 +427,17 @@ scrolledwindow {
 .welcome-laptop-icon image {
     /* Style for the Gtk.Image widget if needed, like size or aspect ratio */
     /* For Gtk.Picture, you might need to target 'picture' or a class you add to it */
-    min-width: 200px;  /* Example minimum size */
-    min-height: 150px; /* Example minimum size */
+    min-width: 250px;  /* Increased from 200px */
+    min-height: 180px; /* Increased from 150px */
     background-size: contain; /* Or cover, depending on desired effect */
     background-repeat: no-repeat;
     background-position: center;
 }
 
 .welcome-install-button {
-    padding: 12px 30px; /* Make button a bit larger */
+    padding: 12px 20px; /* Reduced horizontal padding from 30px */
     font-size: 16px;
-    min-width: 150px;
+    min-width: 120px; /* Reduced min-width from 150px */
     /* Centering the button if its parent is a Gtk.Box with halign=CENTER */
 }
 
