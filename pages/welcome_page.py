@@ -21,15 +21,6 @@ class WelcomePage(BasePage):
         page_container.set_hexpand(True)
         page_container.add_css_class("welcome-page-container")
 
-        # Top-left "Welcome" title
-        welcome_title_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        welcome_title_box.set_halign(Gtk.Align.START)
-        welcome_title_label = Gtk.Label(label="Welcome")
-        welcome_title_label.add_css_class("welcome-page-title-top-left")
-        welcome_title_label.set_halign(Gtk.Align.START)
-        welcome_title_box.append(welcome_title_label)
-        page_container.append(welcome_title_box)
-
         # Centered content
         centered_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         centered_box.set_valign(Gtk.Align.CENTER)
@@ -44,16 +35,11 @@ class WelcomePage(BasePage):
         subtitle.add_css_class("welcome-subtitle")
         centered_box.append(subtitle)
 
-        # Laptop Icon (Placeholder)
-        # TODO: Replace with actual image
-        icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "laptop-wave-icon.png")
-        if os.path.exists(icon_path):
-            laptop_icon = Gtk.Image.new_from_file(icon_path)
-        else:
-            laptop_icon = Gtk.Label(label="💻") # Placeholder if image not found
-            print(f"Laptop icon not found at {icon_path}, using placeholder.")
+        # Laptop Icon
+        icon_path = os.path.join("home/developer/ZenOS/assets", "laptop-wave-icon.png")
+        laptop_icon = Gtk.Image.new_from_file(icon_path)
         laptop_icon.add_css_class("welcome-laptop-icon")
-        laptop_icon.set_pixel_size(128) # Example size, adjust with CSS
+        # Remove set_pixel_size, rely on CSS for sizing
         centered_box.append(laptop_icon)
 
         install_button = Gtk.Button(label="Install Now")

@@ -35,11 +35,11 @@ class LanguagePage(BasePage):
         # Language icon using image file       
         # Get absolute path to icon file (multiple ways to ensure we find it)
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        icon_path = os.path.join("/home/developer/ZenOS/assets", "Language-Icon.png")
+        icon_path = os.path.join(base_dir, "assets", "language-icon.png") # Corrected path
             
             
         # Print debug info
-        print(f"Primary path: {icon_path}, exists: {os.path.exists(icon_path)}")
+        print(f"Language icon path: {icon_path}, exists: {os.path.exists(icon_path)}") # Updated debug message
         # Try to load with the primary path
         if os.path.exists(icon_path):
             # Create image widget

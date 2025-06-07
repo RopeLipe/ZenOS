@@ -398,14 +398,6 @@ scrolledwindow {
     flex-direction: column;
 }
 
-.welcome-page-title-top-left {
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 32px; /* Increased from 20px to match language-title */
-    color: rgba(255, 255, 255, 0.5); /* Light grey */
-    margin-bottom: 20px; /* Space below this title */
-}
-
 .welcome-main-title {
     font-family: 'Inter', sans-serif;
     font-weight: 600;
@@ -424,24 +416,164 @@ scrolledwindow {
     text-align: center;
 }
 
-.welcome-laptop-icon image {
-    /* Style for the Gtk.Image widget if needed, like size or aspect ratio */
-    /* For Gtk.Picture, you might need to target 'picture' or a class you add to it */
-    min-width: 250px;  /* Increased from 200px */
-    min-height: 180px; /* Increased from 150px */
-    background-size: contain; /* Or cover, depending on desired effect */
-    background-repeat: no-repeat;
-    background-position: center;
+/* Targeting the Gtk.Image directly if it has the .welcome-laptop-icon class */
+image.welcome-laptop-icon {
+    min-width: 300px;  /* Further increased */
+    min-height: 220px; /* Further increased */
+    /* Add other properties if needed, like margin */
+    margin-bottom: 20px; /* Example margin */
 }
 
 .welcome-install-button {
-    padding: 12px 20px; /* Reduced horizontal padding from 30px */
-    font-size: 16px;
-    min-width: 120px; /* Reduced min-width from 150px */
+    padding: 10px 18px; /* Adjusted padding */
+    font-size: 15px;    /* Adjusted font size */
+    min-width: auto;     /* Allow button to size based on content + padding */
+    width: auto;         /* Explicitly allow auto width */
     /* Centering the button if its parent is a Gtk.Box with halign=CENTER */
 }
 
 /* Ensure the centered box itself is centered and takes up appropriate space */
 .welcome-page-container > box:nth-child(2) { /* This targets the centered_box */
     justify-content: center; /* Vertical centering of its content */
+}
+
+/* Welcome Page Specific Styling */
+.welcome-page-container {
+    padding: 20px; /* Reduced padding for more space */
+}
+
+.welcome-main-title {
+    font-size: 38px; /* Increased font size */
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.welcome-subtitle {
+    font-size: 22px; /* Increased font size */
+    font-weight: 400;
+    margin-bottom: 30px; /* Increased spacing */
+    text-align: center;
+    color: #B0B0B0; /* Lighter subtitle color */
+}
+
+.welcome-laptop-icon {
+    min-width: 280px; /* Increased icon size */
+    min-height: 280px; /* Increased icon size */
+    margin-bottom: 40px; /* Increased spacing */
+}
+
+.welcome-install-button {
+    min-width: 200px; /* Wider button */
+    padding: 15px 30px; /* Larger padding */
+    font-size: 18px; /* Larger font */
+    font-weight: 600;
+}
+
+/* Language Page Specific Styling */
+.language-main-container {
+    padding: 20px; /* Consistent padding */
+    /* Ensure it takes full height if needed, though content should drive this */
+}
+
+.language-left-panel {
+    min-width: 200px; /* Ensure some minimum width */
+    max-width: 25%; /* Limit width to allow right panel to grow */
+    padding-right: 30px; /* Spacing between panels */
+    /* Vertical alignment if content is shorter than panel */
+    justify-content: center; 
+}
+
+.language-title {
+    font-size: 32px; /* Larger title */
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.language-icon {
+    min-width: 80px; /* Larger icon */
+    min-height: 80px; /* Larger icon */
+    margin-bottom: 20px;
+}
+
+.language-right-panel {
+    /* Allow this panel to take remaining space */
+    /* hexpand is managed by Gtk.Box properties in python */
+    padding-left: 30px; /* Spacing from left panel */
+}
+
+.language-header {
+    margin-bottom: 20px; /* Space below header before list */
+}
+
+.language-header .page-subtitle {
+    font-size: 24px; /* Larger subtitle */
+    font-weight: 600;
+    text-align: left; /* Align to start of right panel */
+    margin-bottom: 8px;
+}
+
+.language-header .page-description {
+    font-size: 16px;
+    text-align: left; /* Align to start of right panel */
+    color: #B0B0B0; /* Lighter description color */
+    margin-bottom: 0; /* No extra margin if it's the last item in header */
+}
+
+.language-selection-container listbox {
+    border-radius: 8px; /* Rounded corners for the listbox */
+}
+
+.language-selection-container row {
+    padding: 15px 20px; /* More padding in rows */
+    font-size: 16px; /* Larger font for language names */
+}
+
+.language-selection-container row:hover {
+    background: #2E2E2E; /* Slightly lighter hover */
+}
+
+.language-selection-container row:selected {
+    background: #3A85D9; /* Consistent selection color */
+}
+
+/* Ensure nav buttons are above other content if overlapping */
+.nav-buttons-overlay {
+    z-index: 1000; 
+}
+
+/* Responsive adjustments */
+@media (max-width: 700px) {
+    .welcome-main-title {
+        font-size: 30px;
+    }
+    .welcome-subtitle {
+        font-size: 18px;
+    }
+    .welcome-laptop-icon {
+        min-width: 200px;
+        min-height: 200px;
+    }
+    .language-main-container {
+        flex-direction: column; /* Stack panels vertically */
+        align-items: center; /* Center items when stacked */
+    }
+    .language-left-panel,
+    .language-right-panel {
+        max-width: 100%;
+        padding-left: 15px; /* Adjust padding for smaller screens */
+        padding-right: 15px;
+        align-items: center; /* Center content within panels */
+        text-align: center; /* Center text within panels */
+    }
+    .language-left-panel {
+        margin-bottom: 20px; /* Space between stacked panels */
+    }
+    .language-title {
+        text-align: center;
+    }
+    .language-header .page-subtitle,
+    .language-header .page-description {
+        text-align: center;
+    }
 }
