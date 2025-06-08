@@ -126,54 +126,33 @@ class InstallerWindow(Adw.ApplicationWindow):
 class InstallerApp(Adw.Application):
     def __init__(self):
         print("DEBUG: InstallerApp __init__ - START")
-        # Try with application_id=None and FLAGS_NONE for maximum simplicity
-        super().__init__(application_id=None,
+        super().__init__(application_id="com.zen.installer", # Restored application_id
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
-        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED (id=None, flags=NONE).")
+        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED (id='com.zen.installer', flags=NONE).")
         
         self.win = None 
-        self.test_win = None # For the simplified on_activate test
+        # self.test_win = None # Removed test_win
         
-        self.connect('activate', self.on_activate_simple_test)
-        print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED to on_activate_simple_test.")
+        self.connect('activate', self.on_activate) # Connect to original on_activate
+        print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED to self.on_activate.")
         print("DEBUG: InstallerApp __init__ - END")
 
-    def on_activate_simple_test(self, app_instance):
-        print("DEBUG: InstallerApp on_activate_simple_test - CALLED.")
-        try:
-            if not self.test_win:
-                print("DEBUG: InstallerApp on_activate_simple_test - Creating basic Adw.ApplicationWindow.")
-                self.test_win = Adw.ApplicationWindow(application=app_instance)
-                self.test_win.set_default_size(200, 150)
-                label = Gtk.Label(label="Test Window")
-                self.test_win.set_content(label) # Changed from set_child to set_content
-                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow CREATED and content SET.")
-            else:
-                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow ALREADY EXISTS.")
-            
-            self.test_win.present()
-            print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow PRESENTED.")
-        except Exception as e:
-            print(f"ERROR in on_activate_simple_test: {e}")
-            import traceback
-            traceback.print_exc()
-        print("DEBUG: InstallerApp on_activate_simple_test - END.")
-
-    def on_activate(self, app_instance): # Original on_activate, not used by current connection
+    def on_activate(self, app_instance): 
         print("DEBUG: InstallerApp on_activate (ORIGINAL) - CALLED.")
-        # Ensure window is created if it doesn't exist
+        
         if not self.win:
+            print("DEBUG: InstallerApp on_activate - Creating InstallerWindow.")
             self.win = InstallerWindow(application=app_instance)
             print("DEBUG: InstallerApp on_activate - InstallerWindow INSTANTIATED.")
+        else:
+            print("DEBUG: InstallerApp on_activate - InstallerWindow ALREADY EXISTS.")
         
-        # Present the window
         if self.win:
             self.win.present()
             print("DEBUG: InstallerApp on_activate - InstallerWindow PRESENTED.")
         else:
-            # This case should ideally not be reached if instantiation is successful
             print("ERROR: InstallerApp on_activate - self.win is None, cannot present.")
-        print("DEBUG: InstallerApp on_activate - END.")
+        print("DEBUG: InstallerApp on_activate (ORIGINAL) - END.")
 
 def main():
     print("DEBUG: main() function called.")
