@@ -126,12 +126,12 @@ class InstallerWindow(Adw.ApplicationWindow):
 class InstallerApp(Adw.Application):
     def __init__(self):
         print("DEBUG: InstallerApp __init__ - START")
-        super().__init__(application_id="com.zen.installer", # Restored application_id
+        # Try with application_id=None again, but with the original on_activate
+        super().__init__(application_id=None, # Changed back to None
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
-        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED (id='com.zen.installer', flags=NONE).")
+        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED (id=None, flags=NONE).")
         
-        self.win = None 
-        # self.test_win = None # Removed test_win
+        self.win = None
         
         self.connect('activate', self.on_activate) # Connect to original on_activate
         print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED to self.on_activate.")
