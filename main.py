@@ -10,14 +10,18 @@ print(f"Current working directory: {os.getcwd()}")
 print(f"Script directory: {os.path.dirname(os.path.abspath(__file__))}")
 print(f"Assets directory exists: {os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets'))}")
 print(f"Assets directory contents: {os.listdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets'))}")
+print("DEBUG: Attempting to import GTK and Adwaita...")
 
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
+print("DEBUG: GTK and Adwaita versions required.")
 
 from gi.repository import Gtk, Adw, Gio, GLib, Gdk # Added Gdk
+print("DEBUG: GTK and Adwaita modules imported.")
 import sys
 
+print("DEBUG: Importing page modules...")
 from pages.language_page import LanguagePage
 from pages.timezone_page import TimezonePage
 from pages.keyboard_page import KeyboardPage
@@ -25,6 +29,7 @@ from pages.disk_page import DiskPage
 from pages.wifi_page import WifiPage
 from pages.user_page import UserPage
 from pages.welcome_page import WelcomePage # Import WelcomePage
+print("DEBUG: Page modules imported successfully.")
 
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
@@ -114,12 +119,37 @@ class InstallerApp(Adw.Application):
         self.connect('activate', self.on_activate)
     
     def on_activate(self, app):
+        print("DEBUG: InstallerApp on_activate called.")
         self.win = InstallerWindow(application=app)
+        print("DEBUG: InstallerWindow instantiated.")
         self.win.present()
+        print("DEBUG: InstallerWindow presented.")
 
 def main():
+    print("DEBUG: main() function called.")
     app = InstallerApp()
-    return app.run(sys.argv)
+    print("DEBUG: InstallerApp instantiated.")
+    exit_code = 0
+    try:
+        print("DEBUG: Attempting to run app.run()...")
+        exit_code = app.run(sys.argv)
+        print(f"DEBUG: app.run() finished with exit_code: {exit_code}")
+    except GLib.Error as e:
+        print(f"GLib Error during app.run(): {e}")
+        import traceback
+        traceback.print_exc()
+        exit_code = 1
+    except Exception as e:
+        print(f"Unhandled Python Exception during app.run() or earlier: {e}")
+        import traceback
+        traceback.print_exc()
+        exit_code = 1
+    finally:
+        print(f"DEBUG: main() function returning {exit_code}.")
+        return exit_code
 
 if __name__ == "__main__":
-    main()
+    print("DEBUG: Script entry point (__name__ == '__main__').")
+    final_exit_code = main()
+    print(f"DEBUG: Script exiting with code: {final_exit_code}.")
+    sys.exit(final_exit_code)
