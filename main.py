@@ -33,7 +33,7 @@ print("DEBUG: Page modules imported successfully.")
 
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
-        print("DEBUG: InstallerWindow __init__ - START")
+        print("DEBUG: InstallerWindow __init__ - ENTERED CONSTRUCTOR.") # Print at very start
         super().__init__(**kwargs)
         print("DEBUG: InstallerWindow __init__ - Adw.ApplicationWindow super().__init__() COMPLETED.")
 
@@ -66,7 +66,7 @@ class InstallerWindow(Adw.ApplicationWindow):
         # Show first page
         self.stack.set_visible_child_name("welcome") # Start with welcome page
         print("DEBUG: InstallerWindow __init__ - Visible child SET to 'welcome'.")
-        print("DEBUG: InstallerWindow __init__ - END")
+        print("DEBUG: InstallerWindow __init__ - END (CONSTRUCTOR FINISHED)")
     
     def load_css(self):
         """Load custom CSS styling"""
@@ -126,29 +126,41 @@ class InstallerWindow(Adw.ApplicationWindow):
 class InstallerApp(Adw.Application):
     def __init__(self):
         print("DEBUG: InstallerApp __init__ - START")
-        # Explicitly use FLAGS_NONE to simplify.
-        super().__init__(application_id="com.zen.installer",
+        # Try with application_id=None and FLAGS_NONE for maximum simplicity
+        super().__init__(application_id=None,
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
-        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED.")
+        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED (id=None, flags=NONE).")
         
-        # self.connect('startup', self.on_startup) # Temporarily disable startup
-        # print("DEBUG: InstallerApp __init__ - 'startup' signal CONNECTED.")
+        self.win = None 
+        self.test_win = None # For the simplified on_activate test
         
-        self.connect('activate', self.on_activate)
-        print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED.")
-        
-        self.win = None # Initialize win attribute
+        self.connect('activate', self.on_activate_simple_test)
+        print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED to on_activate_simple_test.")
         print("DEBUG: InstallerApp __init__ - END")
 
-    # def on_startup(self, app_instance): # Temporarily disable startup
-    #     print("DEBUG: InstallerApp on_startup - CALLED.")
-    #     # This is a good place for one-time setup if needed,
-    #     # like loading resources that don't depend on a window.
-    #     # For now, just a debug print.
+    def on_activate_simple_test(self, app_instance):
+        print("DEBUG: InstallerApp on_activate_simple_test - CALLED.")
+        try:
+            if not self.test_win:
+                print("DEBUG: InstallerApp on_activate_simple_test - Creating basic Adw.ApplicationWindow.")
+                self.test_win = Adw.ApplicationWindow(application=app_instance)
+                self.test_win.set_default_size(200, 150)
+                label = Gtk.Label(label="Test Window")
+                self.test_win.set_child(label)
+                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow CREATED.")
+            else:
+                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow ALREADY EXISTS.")
+            
+            self.test_win.present()
+            print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow PRESENTED.")
+        except Exception as e:
+            print(f"ERROR in on_activate_simple_test: {e}")
+            import traceback
+            traceback.print_exc()
+        print("DEBUG: InstallerApp on_activate_simple_test - END.")
 
-    def on_activate(self, app_instance): # Renamed 'app' to 'app_instance' for clarity
-        print("DEBUG: InstallerApp on_activate - CALLED.")
-        
+    def on_activate(self, app_instance): # Original on_activate, not used by current connection
+        print("DEBUG: InstallerApp on_activate (ORIGINAL) - CALLED.")
         # Ensure window is created if it doesn't exist
         if not self.win:
             self.win = InstallerWindow(application=app_instance)
@@ -166,22 +178,12 @@ class InstallerApp(Adw.Application):
 def main():
     print("DEBUG: main() function called.")
     app = InstallerApp()
-    print("DEBUG: InstallerApp instantiated.")
-    exit_code = 0
-    loop = None 
+    print("DEBUG: InstallerApp instantiated in main().")
+    exit_code = 1 # Default to error
     try:
-        print("DEBUG: Attempting to register and activate application...")
-        app.register(None) 
-        print("DEBUG: Application registered.")
-
-        app.activate()
-        print("DEBUG: Application activated.")
-
-        loop = GLib.MainLoop()
-        print("DEBUG: GLib.MainLoop() created. Starting loop...")
-        loop.run() 
-        print("DEBUG: GLib.MainLoop() finished.")
-        exit_code = 0 
+        print("DEBUG: Attempting to run app.run(sys.argv)...")
+        exit_code = app.run(sys.argv) # Use standard app.run()
+        print(f"DEBUG: app.run() finished with exit_code: {exit_code}")
     except GLib.Error as e:
         print(f"GLib Error during app.run(): {e}")
         import traceback
