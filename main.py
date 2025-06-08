@@ -29,33 +29,9 @@ from pages.welcome_page import WelcomePage # Import WelcomePage
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        
-        # Get screen dimensions
-        display = Gdk.Display.get_default()
-        monitor = display.get_monitors().get_item(0) # Get the first monitor
-        if hasattr(display, 'get_primary_monitor') and display.get_primary_monitor(): # Check if primary_monitor exists
-             monitor = display.get_primary_monitor()
-
-        if monitor:
-            geometry = monitor.get_geometry()
-            screen_width = geometry.width
-            screen_height = geometry.height
-            
-            # Set window size as a percentage of screen size
-            scale_factor_width = 0.7
-            scale_factor_height = 0.7
-            window_width = int(screen_width * scale_factor_width)
-            window_height = int(screen_height * scale_factor_height)
-        else:
-            # Fallback to a default size if monitor info isn't available
-            window_width = 1024
-            window_height = 720
-            print("Warning: Could not get monitor geometry, using default size.")
 
         # Window properties
         self.set_title("System Installer")
-        self.set_default_size(window_width, window_height)
-        self.set_resizable(True) # Set to True if you want to allow resizing and test scaling
         
         # Remove titlebar for clean rounded look
         self.set_decorated(False)
