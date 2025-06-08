@@ -115,15 +115,43 @@ class InstallerWindow(Adw.ApplicationWindow):
 
 class InstallerApp(Adw.Application):
     def __init__(self):
-        super().__init__(application_id="com.zen.installer")
+        print("DEBUG: InstallerApp __init__ - START")
+        # Explicitly use FLAGS_NONE to simplify.
+        super().__init__(application_id="com.zen.installer",
+                         flags=Gio.ApplicationFlags.FLAGS_NONE)
+        print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED.")
+        
+        self.connect('startup', self.on_startup)
+        print("DEBUG: InstallerApp __init__ - 'startup' signal CONNECTED.")
+        
         self.connect('activate', self.on_activate)
-    
-    def on_activate(self, app):
-        print("DEBUG: InstallerApp on_activate called.")
-        self.win = InstallerWindow(application=app)
-        print("DEBUG: InstallerWindow instantiated.")
-        self.win.present()
-        print("DEBUG: InstallerWindow presented.")
+        print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED.")
+        
+        self.win = None # Initialize win attribute
+        print("DEBUG: InstallerApp __init__ - END")
+
+    def on_startup(self, app_instance):
+        print("DEBUG: InstallerApp on_startup - CALLED.")
+        # This is a good place for one-time setup if needed,
+        # like loading resources that don't depend on a window.
+        # For now, just a debug print.
+
+    def on_activate(self, app_instance): # Renamed 'app' to 'app_instance' for clarity
+        print("DEBUG: InstallerApp on_activate - CALLED.")
+        
+        # Ensure window is created if it doesn't exist
+        if not self.win:
+            self.win = InstallerWindow(application=app_instance)
+            print("DEBUG: InstallerApp on_activate - InstallerWindow INSTANTIATED.")
+        
+        # Present the window
+        if self.win:
+            self.win.present()
+            print("DEBUG: InstallerApp on_activate - InstallerWindow PRESENTED.")
+        else:
+            # This case should ideally not be reached if instantiation is successful
+            print("ERROR: InstallerApp on_activate - self.win is None, cannot present.")
+        print("DEBUG: InstallerApp on_activate - END.")
 
 def main():
     print("DEBUG: main() function called.")
