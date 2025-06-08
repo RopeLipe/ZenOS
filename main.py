@@ -33,30 +33,40 @@ print("DEBUG: Page modules imported successfully.")
 
 class InstallerWindow(Adw.ApplicationWindow):
     def __init__(self, **kwargs):
+        print("DEBUG: InstallerWindow __init__ - START")
         super().__init__(**kwargs)
+        print("DEBUG: InstallerWindow __init__ - Adw.ApplicationWindow super().__init__() COMPLETED.")
 
         # Window properties
         self.set_title("System Installer")
+        print("DEBUG: InstallerWindow __init__ - Title SET.")
         
         # Remove titlebar for clean rounded look
         self.set_decorated(False)
+        print("DEBUG: InstallerWindow __init__ - Decoration SET to False.")
         
         # Load custom CSS
         self.load_css()
+        print("DEBUG: InstallerWindow __init__ - CSS LOADED.")
         
         # Create main stack for pages
         self.stack = Gtk.Stack()
         self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         self.stack.set_transition_duration(300)
+        print("DEBUG: InstallerWindow __init__ - Stack CREATED.")
         
         # Initialize pages
         self.init_pages()
+        print("DEBUG: InstallerWindow __init__ - Pages INITIALIZED.")
         
         # Create main layout
         self.setup_layout()
+        print("DEBUG: InstallerWindow __init__ - Layout SETUP.")
         
         # Show first page
         self.stack.set_visible_child_name("welcome") # Start with welcome page
+        print("DEBUG: InstallerWindow __init__ - Visible child SET to 'welcome'.")
+        print("DEBUG: InstallerWindow __init__ - END")
     
     def load_css(self):
         """Load custom CSS styling"""
@@ -121,8 +131,8 @@ class InstallerApp(Adw.Application):
                          flags=Gio.ApplicationFlags.FLAGS_NONE)
         print("DEBUG: InstallerApp __init__ - Adw.Application super().__init__() COMPLETED.")
         
-        self.connect('startup', self.on_startup)
-        print("DEBUG: InstallerApp __init__ - 'startup' signal CONNECTED.")
+        # self.connect('startup', self.on_startup) # Temporarily disable startup
+        # print("DEBUG: InstallerApp __init__ - 'startup' signal CONNECTED.")
         
         self.connect('activate', self.on_activate)
         print("DEBUG: InstallerApp __init__ - 'activate' signal CONNECTED.")
@@ -130,11 +140,11 @@ class InstallerApp(Adw.Application):
         self.win = None # Initialize win attribute
         print("DEBUG: InstallerApp __init__ - END")
 
-    def on_startup(self, app_instance):
-        print("DEBUG: InstallerApp on_startup - CALLED.")
-        # This is a good place for one-time setup if needed,
-        # like loading resources that don't depend on a window.
-        # For now, just a debug print.
+    # def on_startup(self, app_instance): # Temporarily disable startup
+    #     print("DEBUG: InstallerApp on_startup - CALLED.")
+    #     # This is a good place for one-time setup if needed,
+    #     # like loading resources that don't depend on a window.
+    #     # For now, just a debug print.
 
     def on_activate(self, app_instance): # Renamed 'app' to 'app_instance' for clarity
         print("DEBUG: InstallerApp on_activate - CALLED.")
@@ -158,10 +168,20 @@ def main():
     app = InstallerApp()
     print("DEBUG: InstallerApp instantiated.")
     exit_code = 0
+    loop = None 
     try:
-        print("DEBUG: Attempting to run app.run()...")
-        exit_code = app.run(sys.argv)
-        print(f"DEBUG: app.run() finished with exit_code: {exit_code}")
+        print("DEBUG: Attempting to register and activate application...")
+        app.register(None) 
+        print("DEBUG: Application registered.")
+
+        app.activate()
+        print("DEBUG: Application activated.")
+
+        loop = GLib.MainLoop()
+        print("DEBUG: GLib.MainLoop() created. Starting loop...")
+        loop.run() 
+        print("DEBUG: GLib.MainLoop() finished.")
+        exit_code = 0 
     except GLib.Error as e:
         print(f"GLib Error during app.run(): {e}")
         import traceback
