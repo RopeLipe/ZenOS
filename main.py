@@ -146,8 +146,8 @@ class InstallerApp(Adw.Application):
                 self.test_win = Adw.ApplicationWindow(application=app_instance)
                 self.test_win.set_default_size(200, 150)
                 label = Gtk.Label(label="Test Window")
-                self.test_win.set_child(label)
-                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow CREATED.")
+                self.test_win.set_content(label) # Changed from set_child to set_content
+                print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow CREATED and content SET.")
             else:
                 print("DEBUG: InstallerApp on_activate_simple_test - Basic Adw.ApplicationWindow ALREADY EXISTS.")
             
