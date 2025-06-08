@@ -41,8 +41,6 @@ class WelcomePage(BasePage):
         laptop_icon = Gtk.Image()
         laptop_icon.set_from_file(icon_path)
         laptop_icon.add_css_class("welcome-laptop-icon")
-        laptop_icon.set_size_request(128, 128)
-        # Remove set_pixel_size, rely on CSS for sizing
         centered_box.append(laptop_icon)
 
         install_button = Gtk.Button(label="Install Now")
